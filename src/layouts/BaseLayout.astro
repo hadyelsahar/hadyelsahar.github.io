@@ -1,0 +1,163 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { withBase } from '../lib/url.ts';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  noIndex?: boolean;
+}
+
+const {
+  title,
+  description = 'Hady Elsahar, Staff Research Scientist at FAIR, Meta Superintelligence Labs. Generative AI and safety: invisible watermarking, content provenance, multilingual & multimodal generation.',
+  ogImage,
+  noIndex = false,
+} = Astro.props;
+
+const siteTitle = title === 'Hady Elsahar' ? title : `${title} · Hady Elsahar`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = ogImage
+  ? new URL(ogImage, Astro.site).toString()
+  : new URL(withBase('/assets/profile.jpg'), Astro.site).toString();
+
+// Person JSON-LD for SEO
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Hady Elsahar",
+  "url": "https://hadyelsahar.com",
+  "image": "https://hadyelsahar.com/assets/profile.jpg",
+  "jobTitle": "Staff Research Scientist",
+  "worksFor": { "@type": "Organization", "name": "FAIR, Meta Superintelligence Labs" },
+  "sameAs": [
+    "https://scholar.google.com/citations?hl=en&user=SbcM6bsAAAAJ",
+    "https://github.com/hadyelsahar",
+    "https://twitter.com/hadyelsahar",
+    "https://www.linkedin.com/in/hadyelsahar/",
+    "https://bsky.app/profile/hadyelsahar.bsky.social"
+  ],
+  "knowsAbout": ["Generative AI", "Watermarking", "Multilingual NLP", "Speech Translation", "AI Safety", "Content Provenance"],
+  "description": description
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{siteTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.toString()} />
+    {noIndex && <meta name="robots" content="noindex" />}
+
+    <link rel="icon" type="image/png" sizes="32x32" href={withBase('/favicon-32.png')} />
+    <link rel="icon" type="image/png" sizes="192x192" href={withBase('/favicon-192.png')} />
+    <link rel="apple-touch-icon" sizes="180x180" href={withBase('/favicon-180.png')} />
+    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.toString()} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content="Hady Elsahar" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@hadyelsahar" />
+    <meta name="twitter:title" content={siteTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- No-flash theme init (must run before paint) -->
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <slot name="head" />
+  </head>
+  <body class="antialiased selection:bg-accent selection:text-white">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:bg-ink focus:text-bg focus:px-4 focus:py-2 focus:rounded-full focus:text-sm">Skip to content</a>
+    <Nav />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- Theme toggle + scroll-reveal + nav scroll-spy -->
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+
+        // Theme toggle
+        var btn = document.getElementById('theme-toggle');
+        if (btn) {
+          var sync = function () {
+            btn.setAttribute('aria-pressed', root.classList.contains('dark') ? 'true' : 'false');
+          };
+          sync();
+          btn.addEventListener('click', function () {
+            root.classList.toggle('dark');
+            try { localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
+            sync();
+          });
+        }
+
+        // Scroll reveal
+        var reveals = document.querySelectorAll('.reveal');
+        if ('IntersectionObserver' in window && reveals.length) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+              if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); }
+            });
+          }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+          reveals.forEach(function (el) { io.observe(el); });
+        } else {
+          reveals.forEach(function (el) { el.classList.add('is-visible'); });
+        }
+
+        // Nav scroll-spy (home only): highlight #projects / #research links
+        var spyLinks = Array.prototype.slice.call(document.querySelectorAll('[data-spy]'));
+        var sections = spyLinks
+          .map(function (a) { return document.getElementById(a.getAttribute('data-spy')); })
+          .filter(Boolean);
+        if (sections.length && 'IntersectionObserver' in window) {
+          var setActive = function (id) {
+            spyLinks.forEach(function (a) {
+              a.classList.toggle('nav-active', a.getAttribute('data-spy') === id);
+            });
+          };
+          var spy = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); });
+          }, { rootMargin: '-45% 0px -50% 0px' });
+          sections.forEach(function (s) { spy.observe(s); });
+        }
+      })();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+</style>

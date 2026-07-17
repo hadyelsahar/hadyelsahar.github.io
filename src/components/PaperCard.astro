@@ -1,0 +1,41 @@
+---
+import { withBase } from '../lib/url.ts';
+
+interface Link { label: string; href: string; }
+interface Props {
+  id?: string;
+  title: string;
+  authors: string;
+  venue: string;
+  thumbnail?: string;
+  links?: Link[];
+}
+
+const { id, title, authors, venue, thumbnail, links = [] } = Astro.props;
+const thumbSrc = thumbnail ? withBase(thumbnail) : null;
+---
+
+<div id={id} class="grid grid-cols-1 sm:grid-cols-[96px_1fr] gap-x-5 gap-y-2 py-5 border-b border-border last:border-0">
+  <div class="hidden sm:block">
+    {thumbSrc ? (
+      <img src={thumbSrc} alt="" loading="lazy" class="w-[96px] h-[64px] object-cover rounded-[4px] border border-border bg-bg-subtle" />
+    ) : (
+      <div class="w-[96px] h-[64px] rounded-[4px] border border-border bg-bg-subtle"></div>
+    )}
+  </div>
+
+  <div>
+    <h3 class="text-[15.5px] font-semibold leading-[1.35] text-ink">{title}</h3>
+    <p class="mt-1 text-[13px] leading-[1.5] text-muted">{authors}</p>
+    <p class="mt-1 text-[12.5px] italic text-ink-soft">{venue}</p>
+    {links.length > 0 && (
+      <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12.5px]">
+        {links.map((l) => (
+          <a href={l.href} target="_blank" rel="noopener" class="text-accent hover:text-accent-strong underline decoration-border-strong underline-offset-2">
+            {l.label}
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</div>

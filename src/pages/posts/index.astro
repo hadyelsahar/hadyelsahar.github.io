@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { withBase } from '../../lib/url.ts';
+
+const posts = (await getCollection('posts'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title="Writing" description="Essays and notes on multilingual NLP, speech, watermarking, and the cultural side of AI, by Hady Elsahar.">
+  <div class="mx-auto max-w-[900px] px-6 py-12 md:py-16">
+    <div class="flex items-baseline justify-between gap-6">
+      <h1 class="font-serif text-[32px] md:text-[38px] font-semibold tracking-tight text-ink">Writing</h1>
+      <a href={withBase('/rss.xml')} class="font-mono text-[12px] text-muted hover:text-accent transition-colors">RSS ↗</a>
+    </div>
+    <p class="mt-2 text-[15px] leading-[1.5] text-muted max-w-[60ch]">
+      Short, opinionated notes on watermarking, multilinguality, and building generative systems.
+    </p>
+
+    <div class="mt-8">
+      {posts.map((post) => (
+        <a href={withBase(`/posts/${post.id}/`)} class="group grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-x-5 gap-y-1 py-4 border-b border-border">
+          <time datetime={post.data.pubDate.toISOString()} class="font-mono text-[11px] uppercase tracking-wide text-muted pt-1">
+            {dateFmt.format(post.data.pubDate)}
+          </time>
+          <div>
+            <h2 class="text-[16px] font-semibold leading-[1.3] text-ink group-hover:text-accent transition-colors">
+              {post.data.title}
+            </h2>
+            {post.data.description && (
+              <p class="mt-1 text-[13.5px] leading-[1.55] text-muted max-w-[62ch]">{post.data.description}</p>
+            )}
+            {post.data.tags.length > 0 && (
+              <div class="mt-1.5 flex flex-wrap gap-2 font-mono text-[11px] text-muted-2">
+                {post.data.tags.map((tag) => (<span>#{tag}</span>))}
+              </div>
+            )}
+          </div>
+        </a>
+      ))}
+      {posts.length === 0 && (
+        <p class="py-12 text-[14px] text-muted">No posts yet. Check back soon.</p>
+      )}
+    </div>
+
+    <p class="mt-10 text-[13px] leading-[1.6] text-muted max-w-[62ch]">
+      Older tutorial-style posts live on my
+      <a class="link" href="https://medium.com/@hadyelsahar">Medium</a>; newer work also appears on
+      <a class="link" href="https://huggingface.co/hadyelsahar">Hugging Face</a>.
+    </p>
+  </div>
+</BaseLayout>

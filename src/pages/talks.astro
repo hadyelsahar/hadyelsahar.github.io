@@ -1,0 +1,159 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+
+interface Talk {
+  date: string;
+  title: string;
+  venue: string;
+  links?: { label: string; href: string }[];
+}
+
+const talks: Talk[] = [
+  {
+    date: 'May 2025',
+    title: 'Watermarking Workshop · Organizer & Opening',
+    venue: 'ICLR 2025 · 51 accepted papers · 2 keynotes',
+    links: [
+      { label: 'Blogpost', href: 'https://huggingface.co/blog/hadyelsahar/watermarking-iclr2025' },
+      { label: 'Watch Talks', href: 'https://iclr.cc/virtual/2025/workshop/23975' },
+      { label: '51 Papers', href: 'https://openreview.net/group?id=ICLR.cc/2025/Workshop/WMARK#tab-accept' },
+    ],
+  },
+  {
+    date: 'May 2022',
+    title: 'AfricaNLP 2023 Workshop · Organizer',
+    venue: 'ICLR 2023, Kigali, Rwanda',
+    links: [{ label: 'Accepted Papers', href: 'https://sites.google.com/view/africanlp2023/home' }],
+  },
+  {
+    date: 'Apr 2022',
+    title: 'Bridging the Language Gap on Wikipedia',
+    venue: 'M3L Workshop, ICLR 2022',
+  },
+  {
+    date: 'Apr 2022',
+    title: '3rd AfricaNLP Workshop · Organizer',
+    venue: 'ICLR 2022',
+    links: [{ label: 'Accepted Papers', href: 'https://iclr.cc/virtual/2022/workshop/4549' }],
+  },
+  {
+    date: 'Aug 2021',
+    title: 'Panel: Generation, Evaluation & Metrics + NL4Prog Paper',
+    venue: 'GEM Workshop & NL4Prog Workshop, ACL 2021',
+    links: [{ label: 'NL4Prog Paper', href: 'https://nlp4prog.github.io/2021/' }],
+  },
+  {
+    date: 'Aug 2021',
+    title: 'Energy-Based Models · Podcast Interview',
+    venue: 'Naver Labs Europe Podcast (with Marc Dymetman)',
+    links: [{ label: 'Recording & Transcript', href: 'https://europe.naverlabs.com/blog/energy-based-models-interview-with-marc-dymetman-and-hady-elsahar/' }],
+  },
+  {
+    date: 'Jun 2021',
+    title: 'Panel: Inclusivity in Conferences',
+    venue: 'NAACL 2021',
+  },
+  {
+    date: 'Jun 2021',
+    title: 'African Language Diversity in NLP',
+    venue: 'Black in AI Social, NAACL 2021',
+  },
+  {
+    date: 'May 2021',
+    title: 'A Distributional Approach to Controlled Text Generation · Oral',
+    venue: 'ICLR 2021 (Oral, top 2.1%) & AfricaNLP co-organization',
+    links: [{ label: 'Paper', href: 'https://arxiv.org/abs/2012.11635' }],
+  },
+  {
+    date: 'Apr 2021',
+    title: 'Controlled Text Generation',
+    venue: 'ML Collective DLCT',
+  },
+  {
+    date: 'Mar 2021',
+    title: 'Controlling Large Language Models · Lecture',
+    venue: 'RECITAL, Paris',
+  },
+  {
+    date: 'Feb 2021',
+    title: 'Neural Language Generation · Course Lecture',
+    venue: 'DSBA Master, CentraleSupélec, Paris',
+    links: [{ label: 'Slides', href: 'https://speakerdeck.com/hadyelsahar' }],
+  },
+  {
+    date: 'Dec 2020',
+    title: 'Energy-Based Models Workshop · Co-organizer',
+    venue: 'ICLR 2021',
+    links: [{ label: 'Workshop Website', href: 'https://sites.google.com/view/ebm-workshop-iclr2021' }],
+  },
+  {
+    date: 'Dec 2020',
+    title: 'AfricaNLP Workshop · Co-organizer',
+    venue: 'EACL 2021',
+    links: [{ label: 'Workshop Website', href: 'https://sites.google.com/view/africanlp-workshop' }],
+  },
+  {
+    date: 'Apr 2020',
+    title: 'Predicting Machine Learning Model Failures',
+    venue: 'Bloomberg London & UCL',
+    links: [{ label: 'Slides', href: 'https://docs.google.com/presentation/d/1IOwvDeIvI2qkVQkY2ty-fiTrvqodYom4ewrlcYulWWg/edit#slide=id.g6ed26b908d_0_0' }],
+  },
+];
+
+const grouped = talks.reduce<Record<string, Talk[]>>((acc, t) => {
+  const y = t.date.slice(-4);
+  (acc[y] ||= []).push(t);
+  return acc;
+}, {});
+const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
+---
+
+<BaseLayout
+  title="Talks"
+  description="Invited talks, keynotes, lectures, panels, and workshop organization by Hady Elsahar on multilingual NLP, controlled generation, EBMs, and AI watermarking."
+>
+
+  <section class="mx-auto max-w-[900px] px-6 pt-12 md:pt-16 pb-8">
+    <h1 class="font-serif text-[32px] md:text-[38px] font-semibold tracking-tight text-ink">Talks &amp; Teaching</h1>
+    <p class="mt-2 text-[15px] leading-[1.5] text-muted max-w-[60ch]">
+      Invited talks, lectures, panels, and workshop organization, on energy-based models and controlled
+      generation, multilingual &amp; multimodal generation, and invisible watermarking.
+    </p>
+  </section>
+
+  {years.map((year) => (
+    <section class="mx-auto max-w-[900px] px-6 py-8 border-t border-border">
+      <Eyebrow label={year} kicker={`${grouped[year].length} events`} />
+      <div>
+        {grouped[year].map((t) => (
+          <div class="grid grid-cols-1 sm:grid-cols-[100px_1fr] gap-x-5 gap-y-1 py-4 border-b border-border/70 last:border-0">
+            <div class="font-mono text-[11px] uppercase tracking-wide text-muted pt-0.5">{t.date}</div>
+            <div>
+              <p class="text-[15px] font-semibold leading-[1.35] text-ink">{t.title}</p>
+              <p class="mt-0.5 text-[13px] text-muted">{t.venue}</p>
+              {t.links && (
+                <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[12.5px]">
+                  {t.links.map((l) => (
+                    <a href={l.href} target="_blank" rel="noopener" class="text-accent hover:text-accent-strong underline decoration-border-strong underline-offset-2">
+                      {l.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  <section class="mx-auto max-w-[900px] px-6 py-10 border-t border-border">
+    <p class="text-[14px] leading-[1.6] text-muted max-w-[60ch]">
+      Interested in a talk or panel? Happy to speak about watermarking &amp; provenance, multilingual &amp;
+      multimodal generation, controlling generative models, or community building for under-represented
+      languages, <a class="link" href="mailto:hadyelsahar@gmail.com">email me</a>.
+    </p>
+  </section>
+
+</BaseLayout>

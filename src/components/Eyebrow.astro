@@ -1,0 +1,16 @@
+---
+interface Props {
+  label: string;
+  id?: string;
+  kicker?: string;
+}
+
+const { label, id, kicker } = Astro.props;
+---
+
+<div class="flex items-baseline justify-between gap-6 mb-6 pb-2 border-b border-border" id={id}>
+  <h2 class="font-serif text-[15px] font-semibold tracking-tight text-ink">{label}</h2>
+  {kicker && (
+    <span class="font-mono text-[10px] tracking-widest text-muted-2 uppercase">{kicker}</span>
+  )}
+</div>
