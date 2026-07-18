@@ -5,6 +5,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 // import Eyebrow from '../components/Eyebrow.astro'; // used only by the (disabled) Writing section
 import LinkChip from '../components/LinkChip.astro';
+import WatermarkDemo from '../components/WatermarkDemo.astro';
 import { withBase } from '../lib/url.ts';
 import { papers } from '../data/papers.ts';
 import { projects } from '../data/projects.ts';
@@ -199,7 +200,8 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
 
     <div id="proj-track" class="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6" style="scrollbar-width:none;">
       {projects.map((p) => (
-        <article class="snap-start shrink-0 w-[300px] sm:w-[440px] border border-border rounded-[10px] overflow-hidden bg-card flex flex-col">
+        <article class:list={["snap-start shrink-0 border border-border rounded-[10px] overflow-hidden bg-card flex", p.id === 'content-seal' ? 'flex-row w-auto' : 'flex-col w-[300px] sm:w-[440px]']}>
+          <div class:list={["flex flex-col min-w-0", p.id === 'content-seal' ? 'w-[300px] sm:w-[440px] shrink-0' : 'flex-1']}>
           <div class:list={["group/cover relative aspect-[16/9] border-b border-border overflow-hidden", p.imageContain ? "bg-bg-subtle flex items-center justify-center p-3" : "bg-bg-subtle"]}>
             <img src={withBase(p.image)} alt={p.title} loading="lazy" class:list={[p.imageContain ? "max-h-full w-auto object-contain" : "w-full h-full object-cover", p.imagePos]} />
             {p.cover && (
@@ -248,6 +250,8 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
               </div>
             )}
           </div>
+          </div>
+          {p.id === 'content-seal' && <WatermarkDemo />}
         </article>
       ))}
     </div>

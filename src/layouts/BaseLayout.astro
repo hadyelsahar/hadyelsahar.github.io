@@ -79,6 +79,7 @@ const jsonLd = {
           if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
           }
+          if (location.search.indexOf('embed') > -1) document.documentElement.classList.add('embed');
         } catch (e) {}
       })();
     </script>
@@ -180,4 +181,8 @@ const jsonLd = {
 
 <style is:global>
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  /* Embed mode: chrome-free demo for iframing inside the Content Seal card. */
+  html.embed header, html.embed footer { display: none !important; }
+  html.embed body { background: transparent; }
+  html.embed #main > section:first-child { padding-top: 1.25rem; }
 </style>

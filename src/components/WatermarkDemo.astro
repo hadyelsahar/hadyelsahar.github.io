@@ -1,0 +1,91 @@
+---
+// Expanding in-card watermarking demo for the Content Seal project card.
+// A vertical bar on the card's right edge; clicking expands a panel (pushing the
+// neighboring cards) that lazily iframes the existing /demos pages in chrome-free
+// "embed" mode — image (VideoSeal, generate + detect) and audio (AudioSeal).
+import { withBase } from '../lib/url.ts';
+
+const embed = {
+  image: withBase('/demos/videoseal') + '?embed',
+  audio: withBase('/demos/audioseal') + '?embed',
+};
+const full = {
+  image: withBase('/demos/videoseal'),
+  audio: withBase('/demos/audioseal'),
+};
+---
+
+<div class="wm-demo flex shrink-0 self-stretch" data-wm-demo>
+  <!-- vertical toggle bar -->
+  <button
+    type="button"
+    data-wm-toggle
+    aria-expanded="false"
+    aria-label="Try the watermarking demo in your browser"
+    class="group/bar relative w-10 shrink-0 border-l border-border bg-bg-subtle hover:bg-accent-soft transition-colors flex items-center justify-center cursor-pointer"
+  >
+    <span class="[writing-mode:vertical-rl] rotate-180 font-mono text-[10.5px] uppercase tracking-[0.2em] text-muted group-hover/bar:text-accent transition-colors whitespace-nowrap select-none">
+      Try the watermarking demo
+    </span>
+    <span aria-hidden="true" class="absolute bottom-3 left-1/2 -translate-x-1/2 text-muted group-hover/bar:text-accent transition-transform duration-300 group-aria-expanded/bar:rotate-180">→</span>
+  </button>
+
+  <!-- expanding panel -->
+  <div data-wm-panel class="w-0 overflow-hidden transition-[width] duration-300 ease-out bg-card">
+    <div class="w-[480px] h-full flex flex-col">
+      <div class="flex items-center gap-1.5 border-b border-border px-3 py-2 shrink-0">
+        <button data-wm-tab="image" class="wm-tab px-2.5 py-1 rounded-md border border-border font-mono text-[11px] text-ink-soft hover:border-accent transition-colors">Image</button>
+        <button data-wm-tab="audio" class="wm-tab px-2.5 py-1 rounded-md border border-border font-mono text-[11px] text-ink-soft hover:border-accent transition-colors">Audio</button>
+        <span class="ml-auto font-mono text-[9.5px] uppercase tracking-[0.15em] text-muted-2">runs in your browser</span>
+        <button data-wm-close aria-label="Close demo" class="ml-1 grid h-6 w-6 place-items-center rounded-md text-muted hover:text-ink hover:bg-bg-subtle transition-colors">✕</button>
+      </div>
+      <div class="relative flex-1 min-h-0 bg-bg">
+        <iframe data-wm-frame class="absolute inset-0 h-full w-full border-0" title="Watermarking demo" loading="lazy" allow="clipboard-write"></iframe>
+      </div>
+      <div class="border-t border-border px-3 py-2 text-center shrink-0">
+        <a data-wm-full href={full.image} target="_blank" rel="noopener" class="link font-mono text-[11px]">Open the full demo ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ embed, full }}>
+  (function () {
+    var root = document.querySelector('[data-wm-demo]');
+    if (!root) return;
+    var toggle = root.querySelector('[data-wm-toggle]');
+    var panel = root.querySelector('[data-wm-panel]');
+    var frame = root.querySelector('[data-wm-frame]');
+    var fullLink = root.querySelector('[data-wm-full]');
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-wm-tab]'));
+    var closeBtn = root.querySelector('[data-wm-close]');
+    var open = false, tab = 'image', loaded = false;
+
+    function setTab(t) {
+      tab = t;
+      tabs.forEach(function (b) {
+        var on = b.getAttribute('data-wm-tab') === t;
+        b.classList.toggle('bg-accent-soft', on);
+        b.classList.toggle('border-accent', on);
+        b.classList.toggle('text-accent', on);
+      });
+      frame.src = embed[t];
+      fullLink.href = full[t];
+    }
+    function openPanel() {
+      open = true;
+      panel.style.width = '480px';
+      toggle.setAttribute('aria-expanded', 'true');
+      if (!loaded) { loaded = true; setTab(tab); }
+      setTimeout(function () { root.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 140);
+    }
+    function closePanel() {
+      open = false;
+      panel.style.width = '0px';
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    toggle.addEventListener('click', function () { open ? closePanel() : openPanel(); });
+    closeBtn.addEventListener('click', closePanel);
+    tabs.forEach(function (b) { b.addEventListener('click', function () { if (!open) openPanel(); setTab(b.getAttribute('data-wm-tab')); }); });
+  })();
+</script>
