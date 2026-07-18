@@ -29,8 +29,8 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   "name": "Hady Elsahar",
-  "url": "https://hadyelsahar.com",
-  "image": "https://hadyelsahar.com/assets/profile.jpg",
+  "url": "https://hadyelsahar.github.io",
+  "image": "https://hadyelsahar.github.io/assets/profile.jpg",
   "jobTitle": "Staff Research Scientist",
   "worksFor": { "@type": "Organization", "name": "FAIR, Meta Superintelligence Labs" },
   "sameAs": [
@@ -94,15 +94,15 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <!--
-      Analytics: GoatCounter — loads ONLY on the production domain, so localhost,
-      the *.github.io URL, and previews are never counted.
+      Analytics: GoatCounter — loads ONLY on the production site (hadyelsahar.github.io),
+      so localhost and previews are never counted.
       Setup: free account at https://www.goatcounter.com/ with subdomain `hadyelsahar`.
       Testing: append `?gctest` to any URL (e.g. localhost) to force a test pageview
       (this also sets allow_local so GoatCounter accepts counts from localhost).
     -->
     <script is:inline>
       (function () {
-        var prodHosts = ['hadyelsahar.com', 'www.hadyelsahar.com'];
+        var prodHosts = ['hadyelsahar.github.io'];
         var isProd = prodHosts.indexOf(location.hostname) !== -1;
         var isTest = location.search.indexOf('gctest') !== -1;
         if (!isProd && !isTest) return;

@@ -21,7 +21,7 @@ const devNoStore = {
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://hadyelsahar.com',
+  site: 'https://hadyelsahar.github.io',
   base: '/',
   vite: {
     plugins: [tailwindcss(), devNoStore],
