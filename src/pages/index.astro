@@ -45,7 +45,18 @@ const contactLinks = [
 
       <!-- LEFT: name + bio -->
       <div>
-        <h1 class="font-display text-[40px] md:text-[58px] font-semibold tracking-[-0.02em] leading-[0.95] text-ink">Hady Elsahar</h1>
+        <div class="flex items-center gap-4">
+          <img
+            class="profile-pic md:hidden w-[68px] shrink-0 aspect-[5/6] object-cover rounded-[8px] border border-border"
+            src={withBase('/assets/profile.jpg')}
+            data-still={withBase('/assets/profile.jpg')}
+            data-anim={withBase('/assets/avatar-coding.gif')}
+            data-sleep={withBase('/assets/avatar-sleep.gif')}
+            alt="Hady Elsahar"
+            width="212" height="254"
+          />
+          <h1 class="font-display text-[40px] md:text-[58px] font-semibold tracking-[-0.02em] leading-[0.95] text-ink">Hady Elsahar</h1>
+        </div>
         <p class="mt-4 text-[17px] leading-[1.5] text-ink-soft">
           Staff Research Scientist at <a href="https://ai.meta.com/" target="_blank" rel="noopener" class="link font-medium">FAIR, Meta Superintelligence Labs</a>, on the
           <a href="https://facebookresearch.github.io/content-seal/" target="_blank" rel="noopener" class="link font-medium">Content Seal</a> team.
@@ -56,12 +67,12 @@ const contactLinks = [
 
         <div class="mt-6 space-y-4 text-[14.5px] leading-[1.7] text-ink-soft">
           <p>
-            I've worked across generative AI since 2014, back when we still derived our back propagation gradients by hand
+I've worked across generative AI since 2014, back when we still derived our backpropagation gradients by hand
             and coded the backward pass line by line, training stacked LSTMs and GRUs before autodiff,
-            Theano and Torch made it effortless. Since then I've had a
+            Theano, and Torch made it effortless. Since then I've had a
             front-row seat to the field's evolution: from teaching models to copy words they had never seen
             before, to generating text in any language and steering what models say, to today's harder
-            question, telling what's real in the age of deepfakes.
+            question: telling what's real in the age of deepfakes.
           </p>
           <p>
             At Meta, beyond Content Seal, I helped build <span class="font-medium text-ink">SeamlessM4T</span>,
@@ -70,7 +81,7 @@ const contactLinks = [
             and <a class="link" href="https://www.nature.com/articles/s41586-024-08359-z" target="_blank" rel="noopener">published in Nature</a>. Before Meta, at <a href="https://europe.naverlabs.com/" target="_blank" rel="noopener" class="link font-medium">Naver Labs Europe</a>,
             I worked with Marc Dymetman on reinforcement learning for fine-tuning language models
             <span class="font-medium text-ink">without catastrophic forgetting</span>, core research a few years
-            before RLHF, PPO, and DPO became standard practice. Earlier I was at
+            before RLHF, PPO, and DPO became standard practice. Earlier, I was at
             <span class="font-medium text-ink">Bloomberg</span>, IBM, and Microsoft, and did my Ph.D. at
             Université de Lyon with <a href="https://twitter.com/chgravier" target="_blank" rel="noopener" class="link">Christophe Gravier</a>
             and Frédérique Laforest on generating natural language from knowledge graphs.
@@ -78,12 +89,12 @@ const contactLinks = [
           <p>
             Beyond research, I was a board member of <a href="https://www.masakhane.io/" target="_blank" rel="noopener" class="link font-medium">Masakhane</a>, whose
             participatory-research paper received the <a href="https://research.wikimedia.org/awards.html" target="_blank" rel="noopener" class="link">Wikimedia Foundation Research Award</a>,
-            and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel="noopener" class="link font-medium">AfricaNLP</a>. I care about making AI work for under-represented
+and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel="noopener" class="link font-medium">AfricaNLP</a>. I care about making AI work for underrepresented
             languages and communities.
           </p>
           <p>
-            <span class="font-medium text-ink">Open to mentorship.</span> If you're a young researcher from an
-            under-represented group and want advice or encouragement, feel free to
+<span class="font-medium text-ink">Open to mentorship.</span> If you're a young researcher from an
+            underrepresented group and want advice or encouragement, feel free to
             <a class="link" href="mailto:hadyelsahar@gmail.com">reach out</a>.
           </p>
         </div>
@@ -98,14 +109,13 @@ const contactLinks = [
       <!-- RIGHT: sticky sidebar -->
       <aside class="md:sticky md:top-[72px] self-start">
         <img
-          id="profile-pic"
+          class="profile-pic hidden md:block md:w-full aspect-[5/6] object-cover rounded-[8px] border border-border transition-shadow hover:shadow-lg"
           src={withBase('/assets/profile.jpg')}
           data-still={withBase('/assets/profile.jpg')}
           data-anim={withBase('/assets/avatar-coding.gif')}
           data-sleep={withBase('/assets/avatar-sleep.gif')}
           alt="Hady Elsahar"
           width="212" height="254"
-          class="w-[132px] md:w-full aspect-[5/6] object-cover rounded-[8px] border border-border transition-shadow hover:shadow-lg"
         />
 
         <ul class="mt-5 grid grid-cols-2 md:grid-cols-1 gap-x-4 gap-y-1.5 text-[13px]">
@@ -132,29 +142,33 @@ const contactLinks = [
 
   <script is:inline>
     (function () {
-      var img = document.getElementById('profile-pic');
-      if (!img) return;
-      var still = img.getAttribute('data-still');
-      var anim = img.getAttribute('data-anim');
-      var sleep = img.getAttribute('data-sleep');
+      var imgs = Array.prototype.slice.call(document.querySelectorAll('.profile-pic'));
+      if (!imgs.length) return;
+      var first = imgs[0];
+      var still = first.getAttribute('data-still');
+      var anim = first.getAttribute('data-anim');
+      var sleep = first.getAttribute('data-sleep');
       var hoverTimer = null, idleTimer = null, hovering = false;
       // Preload both gifs so swaps are instant.
       [anim, sleep].forEach(function (s) { var p = new Image(); p.src = s; });
 
-      function isSleeping() { return img.src.indexOf('avatar-sleep') > -1; }
-      function showStill() { img.src = still; }
+      function setAll(src) { imgs.forEach(function (im) { im.src = src; }); }
+      function isSleeping() { return first.src.indexOf('avatar-sleep') > -1; }
+      function showStill() { setAll(still); }
 
-      // Hover for 1s -> coding gif.
-      img.addEventListener('mouseenter', function () {
-        hovering = true;
-        if (hoverTimer) return;
-        hoverTimer = setTimeout(function () { img.src = anim + '?t=' + Date.now(); }, 1000);
-      });
-      img.addEventListener('mouseleave', function () {
-        hovering = false;
-        if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
-        showStill();
-        resetIdle();
+      imgs.forEach(function (im) {
+        // Hover for 1s -> coding gif.
+        im.addEventListener('mouseenter', function () {
+          hovering = true;
+          if (hoverTimer) return;
+          hoverTimer = setTimeout(function () { setAll(anim + '?t=' + Date.now()); }, 1000);
+        });
+        im.addEventListener('mouseleave', function () {
+          hovering = false;
+          if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+          showStill();
+          resetIdle();
+        });
       });
 
       // No scroll for 10s -> sleeping gif. Any scroll wakes it up.
@@ -162,7 +176,7 @@ const contactLinks = [
         if (idleTimer) clearTimeout(idleTimer);
         if (!hovering && isSleeping()) showStill();
         idleTimer = setTimeout(function () {
-          if (!hovering) img.src = sleep + '?t=' + Date.now();
+          if (!hovering) setAll(sleep + '?t=' + Date.now());
         }, 10000);
       }
       window.addEventListener('scroll', resetIdle, { passive: true });
