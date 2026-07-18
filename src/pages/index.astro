@@ -61,15 +61,14 @@ const contactLinks = [
           Staff Research Scientist at <a href="https://ai.meta.com/" target="_blank" rel="noopener" class="link font-medium">FAIR, Meta Superintelligence Labs</a>, on the
           <a href="https://facebookresearch.github.io/content-seal/" target="_blank" rel="noopener" class="link font-medium">Content Seal</a> team.
           I work at the intersection of <span class="font-medium">generative AI and safety</span>, currently on invisible watermarking
-          and content provenance, helping scale watermarking and AI-generated-media detection to billions of users,
-          watermarking millions of videos a day.
+          and content provenance, helping scale AI-generated-media detection to billions of users
+          and protecting millions of videos a day.
         </p>
 
         <div class="mt-6 space-y-4 text-[14.5px] leading-[1.7] text-ink-soft">
           <p>
-I've worked across generative AI since 2014, back when we still derived our backpropagation gradients by hand
-            and coded the backward pass line by line, training stacked LSTMs and GRUs before autodiff,
-            Theano, and Torch made it effortless. Since then I've had a
+            I've worked in generative AI since 2014—back when we still derived gradients by hand
+            and trained stacked LSTMs before autodiff made it effortless. Since then I've had a
             front-row seat to the field's evolution: from teaching models to copy words they had never seen
             before, to generating text in any language and steering what models say, to today's harder
             question: telling what's real in the age of deepfakes.
@@ -80,8 +79,8 @@ I've worked across generative AI since 2014, back when we still derived our back
             <a class="link" href="https://time.com/collection/best-inventions-2023/6326994/meta-seamlessm4t/" target="_blank" rel="noopener">TIME Best Invention of 2023</a>
             and <a class="link" href="https://www.nature.com/articles/s41586-024-08359-z" target="_blank" rel="noopener">published in Nature</a>. Before Meta, at <a href="https://europe.naverlabs.com/" target="_blank" rel="noopener" class="link font-medium">Naver Labs Europe</a>,
             I worked with Marc Dymetman on reinforcement learning for fine-tuning language models
-            <span class="font-medium text-ink">without catastrophic forgetting</span>, core research a few years
-            before RLHF, PPO, and DPO became standard practice. Earlier, I was at
+            <span class="font-medium text-ink">without catastrophic forgetting</span>—foundational research into
+            RL-based alignment. Earlier, I was at
             <span class="font-medium text-ink">Bloomberg</span>, IBM, and Microsoft, and did my Ph.D. at
             Université de Lyon with <a href="https://twitter.com/chgravier" target="_blank" rel="noopener" class="link">Christophe Gravier</a>
             and Frédérique Laforest on generating natural language from knowledge graphs.
@@ -93,7 +92,7 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
             languages and communities.
           </p>
           <p>
-<span class="font-medium text-ink">Open to mentorship.</span> If you're a young researcher from an
+            <span class="font-medium text-ink">Open to mentorship.</span> If you're an early-career researcher from an
             underrepresented group and want advice or encouragement, feel free to
             <a class="link" href="mailto:hadyelsahar@gmail.com">reach out</a>.
           </p>
@@ -310,7 +309,6 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
             <img src={withBase('/assets/figures/fig-qg-kg.png')} alt="Zero-shot question generation model with a fact encoder, textual context encoders, and a copy-action GRU decoder using GloVe and TransE embeddings" loading="lazy" class="w-full rounded-[6px] border border-border bg-figure" />
             <figcaption class="mt-2 text-[12px] text-muted">
               A GRU decoder with part-of-speech copy actions, conditioned on knowledge-base facts (TransE) and textual context.
-              From <em>Zero-Shot Question Generation from Knowledge Graphs</em> (NAACL 2018).
             </figcaption>
           </figure>
           <div class="mt-6 pt-4 border-t border-border">
@@ -364,19 +362,18 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
           <h3 class="font-serif text-[21px] font-semibold text-ink leading-tight">Reinforcement learning for language models, without catastrophic forgetting</h3>
           <p class="mt-3 text-[14.5px] leading-[1.7] text-ink-soft">
             With Marc Dymetman, I studied fine-tuning language models under reinforcement learning while
-            <span class="font-medium text-ink"> avoiding catastrophic forgetting</span>, years before RLHF and
-            PPO fine-tuning became shorthand. We formalized control as constraint satisfaction over distributions, solved via
-            Energy-Based Models and distributional policy gradients, an ICLR 2021 Oral (top 2.1%) and its
-            conditional extension at ICML 2022.
+            <span class="font-medium text-ink"> avoiding catastrophic forgetting</span>—an early approach to
+            RL-based alignment. We formalized control as constraint satisfaction over distributions, solved via
+            Energy-Based Models and distributional policy gradients.
           </p>
           <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <figure>
               <img src={withBase('/assets/figures/fig-gdc.png')} alt="Information-geometry diagram: projecting from a Maximum-Entropy specification to an Energy-Based Model" loading="lazy" class="w-full rounded-[6px] border border-border bg-figure" />
-              <figcaption class="mt-2 text-[12px] text-muted">Distributional control via Information Geometry · <em>A Distributional Approach to Controlled Text Generation</em> (ICLR 2021, Oral).</figcaption>
+              <figcaption class="mt-2 text-[12px] text-muted">Distributional control via Information Geometry.</figcaption>
             </figure>
             <figure>
               <img src={withBase('/assets/figures/fig-cdpg.png')} alt="Training curves showing Reinforce collapsing in BLEU-4 while CDPG maintains quality" loading="lazy" class="w-full rounded-[6px] border border-border bg-figure" />
-              <figcaption class="mt-2 text-[12px] text-muted">Standard RL (Reinforce) catastrophically loses quality; CDPG satisfies the constraint while preserving it · <em>ICML 2022</em>.</figcaption>
+              <figcaption class="mt-2 text-[12px] text-muted">Standard RL (Reinforce) catastrophically loses quality; CDPG satisfies the constraint while preserving it.</figcaption>
             </figure>
           </div>
           <div class="mt-6 pt-4 border-t border-border">
