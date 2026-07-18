@@ -1,0 +1,222 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/url.ts';
+
+const cfg = {
+  model: withBase('/assets/demos/audioseal/detector.fp16.onnx'),
+  gallery: withBase('/assets/demos/audioseal/gallery/gallery.json'),
+  galleryDir: withBase('/assets/demos/audioseal/gallery/'),
+};
+---
+
+<BaseLayout
+  title="Audio Watermark Detection Demo"
+  description="Detect Meta AudioSeal invisible audio watermarks live in your browser. Attack a watermarked clip (noise, resample, low-pass, crop) and watch the 16-bit message survive."
+>
+  <section class="mx-auto max-w-[900px] px-6 pt-12 md:pt-16 pb-10">
+    <p class="font-mono text-[11px] uppercase tracking-[0.15em] text-accent">Runs 100% in your browser</p>
+    <h1 class="mt-2 font-display text-[34px] md:text-[46px] font-semibold tracking-[-0.02em] leading-[1.02] text-ink">
+      Can you scrub an inaudible watermark out of sound?
+    </h1>
+    <p class="mt-4 text-[15.5px] leading-[1.6] text-ink-soft max-w-[68ch]">
+      These clips carry an <span class="font-medium text-ink">inaudible watermark</span> embedded with Meta's
+      <a class="link" href="https://github.com/facebookresearch/audioseal">AudioSeal</a> (a hidden 16-bit message).
+      Play original vs watermarked, they sound identical. Then attack the audio and run the detector to see how
+      many bits survive. The <span class="font-medium text-ink">17 MB detector runs entirely on your device</span>
+      via ONNX Runtime Web.
+    </p>
+
+    <div id="loader" class="mt-8 rounded-[10px] border border-border bg-bg-subtle p-5">
+      <button id="load-btn" class="inline-flex items-center gap-2 rounded-md border border-accent bg-accent-soft px-4 py-2 font-mono text-[12.5px] text-accent hover:bg-accent hover:text-bg transition-colors">
+        ▶ Load detector (17 MB)
+      </button>
+      <div id="load-progress" class="mt-3 hidden">
+        <div class="h-1.5 w-full overflow-hidden rounded-full bg-border"><div id="load-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div></div>
+        <p id="load-msg" class="mt-2 font-mono text-[11px] text-muted"></p>
+      </div>
+    </div>
+
+    <div id="demo" class="mt-8 hidden">
+      <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Pick a watermarked clip</p>
+      <div id="gallery" class="mt-2 flex flex-wrap gap-2"></div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8 items-start">
+        <div>
+          <!-- waveform -->
+          <div class="rounded-[8px] border border-border bg-figure p-3">
+            <canvas id="wave" width="560" height="120" class="w-full h-[120px]"></canvas>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2 font-mono text-[11.5px]">
+            <button id="play-orig" class="px-2.5 py-1 rounded border border-border hover:border-ink transition-colors">▶ original</button>
+            <button id="play-wm" class="px-2.5 py-1 rounded border border-border hover:border-ink transition-colors">▶ watermarked</button>
+            <button id="play-att" class="px-2.5 py-1 rounded border border-accent text-accent hover:bg-accent-soft transition-colors">▶ attacked</button>
+            <button id="stop" class="px-2.5 py-1 rounded border border-border hover:border-ink transition-colors">■ stop</button>
+          </div>
+
+          <p class="mt-5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Attack the audio</p>
+          <div class="mt-3 space-y-3">
+            <label class="block"><span class="font-mono text-[11px] text-ink-soft">Gaussian noise <b id="v-noise" class="text-accent">0</b></span>
+              <input id="a-noise" type="range" min="0" max="60" value="0" class="w-full accent-[var(--color-accent)]" /></label>
+            <label class="block"><span class="font-mono text-[11px] text-ink-soft">Downsample to <b id="v-ds" class="text-accent">16.0</b> kHz</span>
+              <input id="a-ds" type="range" min="2" max="16" value="16" step="0.5" class="w-full accent-[var(--color-accent)]" /></label>
+            <label class="block"><span class="font-mono text-[11px] text-ink-soft">Low-pass cutoff <b id="v-lp" class="text-accent">8000</b> Hz</span>
+              <input id="a-lp" type="range" min="500" max="8000" value="8000" step="100" class="w-full accent-[var(--color-accent)]" /></label>
+            <label class="block"><span class="font-mono text-[11px] text-ink-soft">Volume <b id="v-gain" class="text-accent">100</b>%</span>
+              <input id="a-gain" type="range" min="5" max="100" value="100" class="w-full accent-[var(--color-accent)]" /></label>
+            <label class="block"><span class="font-mono text-[11px] text-ink-soft">Keep first <b id="v-crop" class="text-accent">100</b>%</span>
+              <input id="a-crop" type="range" min="20" max="100" value="100" class="w-full accent-[var(--color-accent)]" /></label>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <button id="reset-btn" class="rounded-md border border-border px-3 py-1.5 font-mono text-[11.5px] text-ink-soft hover:border-ink transition-colors">↺ Reset</button>
+            <label class="rounded-md border border-border px-3 py-1.5 font-mono text-[11.5px] text-ink-soft hover:border-ink transition-colors cursor-pointer">↥ Test your own audio<input id="upload" type="file" accept="audio/*" class="hidden" /></label>
+          </div>
+        </div>
+
+        <!-- result -->
+        <div class="rounded-[10px] border border-border bg-card p-4">
+          <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Is it watermarked?</p>
+          <p id="det-verdict" class="mt-1 font-mono text-[12px] px-2.5 py-1 rounded-full border border-border text-muted inline-block">idle</p>
+          <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-border"><div id="det-bar" class="h-full w-0 transition-[width] duration-300" style="background: var(--color-accent)"></div></div>
+          <p class="mt-1 font-mono text-[10px] text-muted-2">detection confidence <b id="det-val">--</b></p>
+
+          <p class="mt-4 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Message recovered</p>
+          <p class="mt-1"><span id="acc-val" class="font-display text-[30px] font-semibold text-ink leading-none">--</span><span class="text-[14px] text-muted"> / 16 bits</span></p>
+          <div id="bitgrid" class="mt-3 grid gap-[3px]" style="grid-template-columns: repeat(16, 1fr);"></div>
+          <p class="mt-2 font-mono text-[10px] text-muted-2"><span class="text-accent">■</span> correct · <span style="color:#d1495b">■</span> flipped</p>
+        </div>
+      </div>
+
+      <p class="mt-8 text-[12px] text-muted">
+        Detector: AudioSeal 16-bit (16 kHz), fp16 ONNX. Embedding done offline; this page runs only the detector.
+        Method: <a class="link" href="https://github.com/facebookresearch/audioseal">facebookresearch/audioseal</a> (ICML 2024).
+      </p>
+    </div>
+  </section>
+
+  <script type="application/json" id="as-cfg" set:html={JSON.stringify(cfg)}></script>
+  <script is:inline>
+    (function () {
+      const cfg = JSON.parse(document.getElementById('as-cfg').textContent);
+      const ORT_VER = '1.20.1', SR = 16000;
+      let ort = null, session = null, gallery = null, current = null;
+      const bases = {}; // {orig: Float32Array@16k, wm: Float32Array@16k}
+      let attacked = null, audioCtx = null, srcNode = null;
+      const $ = (id) => document.getElementById(id);
+
+      async function decodeTo16k(arrayBuffer) {
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        const buf = await ac.decodeAudioData(arrayBuffer.slice(0));
+        ac.close();
+        const off = new OfflineAudioContext(1, Math.ceil(buf.duration * SR), SR);
+        const src = off.createBufferSource();
+        // downmix to mono
+        const mono = off.createBuffer(1, buf.length, buf.sampleRate);
+        const m = mono.getChannelData(0);
+        for (let ch = 0; ch < buf.numberOfChannels; ch++) { const d = buf.getChannelData(ch); for (let i = 0; i < d.length; i++) m[i] += d[i] / buf.numberOfChannels; }
+        src.buffer = mono; src.connect(off.destination); src.start();
+        const rendered = await off.startRendering();
+        return rendered.getChannelData(0).slice();
+      }
+      async function fetchAudio(url) { return decodeTo16k(await (await fetch(url)).arrayBuffer()); }
+
+      // ---- attacks on Float32 @16k ----
+      function applyAttacks() {
+        if (!bases.wm) return;
+        let x = bases.wm;
+        const crop = +$('a-crop').value, ds = +$('a-ds').value, lp = +$('a-lp').value, noise = +$('a-noise').value, gain = +$('a-gain').value;
+        if (crop < 100) x = x.slice(0, Math.floor(x.length * crop / 100));
+        if (ds < 16) { // decimate to ds kHz then linear-interp back to 16k
+          const factor = 16 / ds, m = Math.max(1, Math.round(factor));
+          const dec = []; for (let i = 0; i < x.length; i += m) dec.push(x[i]);
+          const y = new Float32Array(x.length);
+          for (let i = 0; i < x.length; i++) { const p = i / m, j = Math.floor(p), f = p - j; y[i] = (dec[j] || 0) * (1 - f) + (dec[j + 1] || 0) * f; }
+          x = y;
+        }
+        if (lp < 8000) { // one-pole low-pass
+          const dt = 1 / SR, rc = 1 / (2 * Math.PI * lp), a = dt / (rc + dt), y = new Float32Array(x.length);
+          y[0] = x[0]; for (let i = 1; i < x.length; i++) y[i] = y[i - 1] + a * (x[i] - y[i - 1]);
+          x = y;
+        }
+        if (noise > 0) { const s = noise / 1000, y = new Float32Array(x.length); for (let i = 0; i < x.length; i++) y[i] = x[i] + (Math.random() + Math.random() + Math.random() - 1.5) * s; x = y; }
+        if (gain < 100) { const g = gain / 100, y = new Float32Array(x.length); for (let i = 0; i < x.length; i++) y[i] = x[i] * g; x = y; }
+        attacked = x; drawWave(x); detect(x);
+      }
+
+      // ---- detector ----
+      function buildGrid() { const g = $('bitgrid'); g.innerHTML = ''; for (let i = 0; i < 16; i++) { const d = document.createElement('div'); d.style.cssText = 'aspect-ratio:1;border-radius:2px;background:var(--color-border)'; g.appendChild(d); } }
+      async function detect(x) {
+        if (!session) return;
+        const t = new ort.Tensor('float32', x, [1, 1, x.length]);
+        const out = await session.run({ audio: t });
+        const message = out.message.data, det = out.det_prob.data[0];
+        const cells = $('bitgrid').children; const truth = current && current.bits ? current.bits : null; let correct = 0;
+        for (let i = 0; i < 16; i++) { const bit = message[i] > 0.5 ? 1 : 0; const ok = truth ? bit === truth[i] : null; if (ok) correct++; cells[i].style.background = truth == null ? 'var(--color-muted-2)' : (ok ? 'var(--color-accent)' : '#d1495b'); }
+        // detection meter
+        $('det-val').textContent = det.toFixed(3); $('det-bar').style.width = (det * 100) + '%';
+        const dv = $('det-verdict');
+        if (det >= 0.5) { dv.textContent = '✓ watermark present'; dv.style.color = 'var(--color-accent)'; dv.style.borderColor = 'var(--color-accent)'; $('det-bar').style.background = 'var(--color-accent)'; }
+        else { dv.textContent = '✕ none detected'; dv.style.color = '#d1495b'; dv.style.borderColor = '#d1495b'; $('det-bar').style.background = '#d1495b'; }
+        // bits
+        if (truth == null) { $('acc-val').textContent = '?'; }
+        else { $('acc-val').textContent = String(correct); }
+      }
+
+      // ---- waveform + playback ----
+      function drawWave(x) {
+        const c = $('wave'), ctx = c.getContext('2d'), W = c.width, H = c.height; ctx.clearRect(0, 0, W, H);
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-accent') || '#12507a'; ctx.beginPath();
+        const step = Math.ceil(x.length / W);
+        for (let i = 0; i < W; i++) { let mn = 1, mx = -1; for (let j = 0; j < step; j++) { const v = x[i * step + j] || 0; if (v < mn) mn = v; if (v > mx) mx = v; } ctx.moveTo(i, (1 - (mx * 0.9 + 1) / 2) * H); ctx.lineTo(i, (1 - (mn * 0.9 + 1) / 2) * H); }
+        ctx.stroke();
+      }
+      function play(x) {
+        stop();
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const buf = audioCtx.createBuffer(1, x.length, SR); buf.getChannelData(0).set(x);
+        srcNode = audioCtx.createBufferSource(); srcNode.buffer = buf; srcNode.connect(audioCtx.destination); srcNode.start();
+      }
+      function stop() { if (srcNode) { try { srcNode.stop(); } catch (e) {} srcNode = null; } }
+
+      async function selectClip(item) {
+        current = { ...item, bits: item.bits ? Uint8Array.from(item.bits, (c) => +c) : null };
+        bases.orig = await fetchAudio(cfg.galleryDir + item.orig);
+        bases.wm = await fetchAudio(cfg.galleryDir + item.wm);
+        reset();
+        document.querySelectorAll('#gallery .g-clip').forEach((t) => t.classList.toggle('bg-accent-soft', t.dataset.id === item.id));
+      }
+      function syncLabels() { $('v-noise').textContent = $('a-noise').value; $('v-ds').textContent = (+$('a-ds').value).toFixed(1); $('v-lp').textContent = $('a-lp').value; $('v-gain').textContent = $('a-gain').value; $('v-crop').textContent = $('a-crop').value; }
+      function reset() { $('a-noise').value = 0; $('a-ds').value = 16; $('a-lp').value = 8000; $('a-gain').value = 100; $('a-crop').value = 100; syncLabels(); applyAttacks(); }
+
+      async function loadModel() {
+        $('load-btn').disabled = true; $('load-btn').style.opacity = 0.5; $('load-progress').classList.remove('hidden');
+        const msg = $('load-msg'), bar = $('load-bar');
+        try {
+          msg.textContent = 'fetching ONNX Runtime…';
+          ort = await import(`https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VER}/dist/ort.mjs`);
+          ort.env.wasm.numThreads = 1; ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VER}/dist/`;
+          const resp = await fetch(cfg.model); const total = +resp.headers.get('content-length') || 17427927;
+          const reader = resp.body.getReader(); const chunks = []; let got = 0;
+          while (true) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); got += value.length; bar.style.width = (got / total * 100) + '%'; msg.textContent = `downloading detector… ${(got / 1e6).toFixed(0)} / ${(total / 1e6).toFixed(0)} MB`; }
+          const bufm = new Uint8Array(got); let o = 0; for (const c of chunks) { bufm.set(c, o); o += c.length; }
+          msg.textContent = 'initializing…';
+          try { session = await ort.InferenceSession.create(bufm, { executionProviders: ['webgpu', 'wasm'] }); }
+          catch (e) { session = await ort.InferenceSession.create(bufm, { executionProviders: ['wasm'] }); }
+          $('loader').classList.add('hidden'); $('demo').classList.remove('hidden'); buildGrid();
+          gallery = await (await fetch(cfg.gallery)).json();
+          const g = $('gallery');
+          gallery.clips.forEach((item) => { const b = document.createElement('button'); b.className = 'g-clip px-3 py-1.5 rounded-md border border-border font-mono text-[12px] text-ink-soft hover:border-accent transition-colors'; b.dataset.id = item.id; b.textContent = item.id + ' · SNR ' + item.snr + 'dB'; b.addEventListener('click', () => selectClip(item)); g.appendChild(b); });
+          await selectClip(gallery.clips[0]);
+        } catch (e) { msg.textContent = 'failed: ' + (e && e.message ? e.message : e); }
+      }
+
+      $('load-btn').addEventListener('click', loadModel);
+      ['a-noise', 'a-ds', 'a-lp', 'a-gain', 'a-crop'].forEach((id) => { $(id).addEventListener('input', syncLabels); $(id).addEventListener('change', applyAttacks); });
+      $('reset-btn').addEventListener('click', reset);
+      $('play-orig').addEventListener('click', () => bases.orig && play(bases.orig));
+      $('play-wm').addEventListener('click', () => bases.wm && play(bases.wm));
+      $('play-att').addEventListener('click', () => attacked && play(attacked));
+      $('stop').addEventListener('click', stop);
+      $('upload').addEventListener('change', async (e) => { const f = e.target.files[0]; if (!f) return; const x = await decodeTo16k(await f.arrayBuffer()); bases.orig = x; bases.wm = x; current = { bits: null }; reset(); });
+    })();
+  </script>
+</BaseLayout>

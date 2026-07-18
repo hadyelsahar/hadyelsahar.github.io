@@ -1,0 +1,25 @@
+---
+// Decap CMS admin, served as a real Astro route.
+//
+// Why a route and not a static public/admin/index.html: during `astro dev`,
+// browser navigation requests (Accept: text/html) are handled by Astro's
+// router, which 404s on static .html files in public/. A real page is served
+// correctly in both dev and the production build (emits /admin/index.html).
+//
+// The CMS config still lives at public/admin/config.yml and is fetched at
+// runtime (non-HTML request), so it is served statically without issue.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Content Editor · hadyelsahar.com</title>
+    <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
+  </head>
+  <body>
+    <script is:inline src="https://unpkg.com/decap-cms@^3.8.4/dist/decap-cms.js"></script>
+  </body>
+</html>

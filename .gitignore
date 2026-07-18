@@ -32,3 +32,6 @@ screenshots/
 screenshots_small/
 website_old.txt
 Squarespace-Wordpress-Export-*.xml
+
+# editor
+.vscode/

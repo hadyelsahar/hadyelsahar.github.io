@@ -11,6 +11,7 @@ export interface GalleryItem {
   alt: string;
   href: string;
   pos?: string; // tailwind object-position class
+  hint?: string; // hover call-to-action shown over the image
 }
 
 export interface Project {
@@ -21,6 +22,7 @@ export interface Project {
   image: string;
   imagePos?: string;
   imageContain?: boolean;
+  cover?: { href: string; hint: string }; // makes the cover image a link with a hover call-to-action
   gallery?: GalleryItem[];
   press: ProjectLink[];
   links: ProjectLink[];
@@ -35,6 +37,7 @@ export const projects: Project[] = [
       'Built the <span class="font-medium text-ink">Content Seal team from the ground up</span>, scaling watermarking research into products across Meta, including Muse Image and Video. Now <span class="font-medium text-ink">watermarking millions of videos and audio clips per day</span> across the family of apps, spanning AudioSeal, Video Seal, Pixel Seal, and Text Seal.',
     image: '/assets/media/media-contentseal-site.jpg',
     imagePos: 'object-center',
+    cover: { href: 'https://facebookresearch.github.io/content-seal/', hint: 'Explore the Content Seal project' },
     press: [
       { label: 'TechCrunch', href: 'https://techcrunch.com/2024/12/12/meta-releases-a-tool-for-watermarking-ai-generated-videos/' },
       { label: 'MIT Tech Review', href: 'https://www.technologyreview.com/2024/06/18/1094009/meta-has-created-a-way-to-watermark-ai-generated-speech/' },
@@ -52,11 +55,12 @@ export const projects: Project[] = [
     period: '2022 – 2024',
     title: 'Seamless: Speech Translation',
     blurb:
-      'Part of the Seamless team behind <span class="font-medium text-ink">SeamlessM4T</span>, a single foundation model for direct speech-to-speech and speech-to-text translation across <span class="font-medium text-ink">nearly 100 languages</span>. A <span class="font-medium text-ink">TIME Best Invention of 2023</span>, later <span class="font-medium text-ink">published in Nature</span>.',
+      'Part of the Seamless team behind <span class="font-medium text-ink">SeamlessM4T</span>, a single foundation model for direct speech-to-speech and speech-to-text translation across <span class="font-medium text-ink">nearly 100 languages</span>. A <a class="link font-medium" href="https://time.com/collection/best-inventions-2023/6326994/meta-seamlessm4t/" target="_blank" rel="noopener">TIME Best Invention of 2023</a>, later <a class="link font-medium" href="https://www.nature.com/articles/s41586-024-08359-z" target="_blank" rel="noopener">published in Nature</a>.',
     image: '/assets/media/media-time-cover.jpg',
     imagePos: 'object-top',
+    cover: { href: 'https://time.com/collection/best-inventions-2023/6326994/meta-seamlessm4t/', hint: 'Read the TIME feature' },
     gallery: [
-      { img: '/assets/media/media-nature-cover.jpg', alt: 'Nature cover, vol. 637 (Jan 2025)', href: 'https://www.nature.com/articles/s41586-024-08359-z', pos: 'object-top' },
+      { img: '/assets/media/media-nature-cover.jpg', alt: 'Nature cover, vol. 637 (Jan 2025)', href: 'https://www.nature.com/articles/s41586-024-08359-z', pos: 'object-top', hint: 'See the Nature paper' },
     ],
     press: [
       { label: 'Time · Best Invention 2023', href: 'https://time.com/collection/best-inventions-2023/6326994/meta-seamlessm4t/' },
@@ -65,7 +69,7 @@ export const projects: Project[] = [
     ],
     links: [
       { label: 'Meta AI blog', href: 'https://ai.meta.com/blog/seamless-m4t/' },
-      { label: 'Demo (HF)', href: 'https://huggingface.co/spaces/facebook/seamless_m4t' },
+      { label: 'Demo (Meta AI)', href: 'https://seamless.metademolab.com/' },
     ],
   },
   {
@@ -76,6 +80,7 @@ export const projects: Project[] = [
       'Co-chaired the multilinguality working group of BigScience, the open, year-long collaboration of 1,000+ researchers from 60+ countries that produced BLOOM, a 176B-parameter open multilingual language model and a landmark in open, participatory AI.',
     image: '/assets/media/media-bigscience.jpg',
     imagePos: 'object-center',
+    cover: { href: 'https://huggingface.co/bigscience', hint: 'Explore BigScience & BLOOM' },
     press: [
       { label: 'MIT Tech Review', href: 'https://www.technologyreview.com/2022/07/12/1055817/inside-a-radical-new-project-to-democratize-ai/' },
       { label: 'VentureBeat', href: 'https://venturebeat.com/ai/ai-goes-multilingual-with-hugging-faces-bloom-large-language-model/' },
@@ -95,6 +100,7 @@ export const projects: Project[] = [
     image: '/assets/media/media-masakhane-logo.jpg',
     imagePos: 'object-center',
     imageContain: true,
+    cover: { href: 'https://www.masakhane.io/', hint: 'Visit Masakhane' },
     press: [
       { label: 'Wikimedia Research Award', href: 'https://research.wikimedia.org/awards.html' },
       { label: 'EMNLP 2020 · participatory MT', href: 'https://arxiv.org/abs/2010.02353' },

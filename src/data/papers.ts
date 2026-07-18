@@ -28,7 +28,7 @@ export const papers: Paper[] = [
   },
   {
     id: 'paper-pixel-seal',
-    title: 'Pixel Seal: Adversarial-Only Training for Invisible Image and Video Watermarking',
+    title: 'PixelSeal: Adversarial-Only Training for Invisible Image and Video Watermarking',
     authors: 'Content Seal team (incl. Hady Elsahar)',
     venue: 'Meta AI · 2025',
     links: [
@@ -38,7 +38,7 @@ export const papers: Paper[] = [
   },
   {
     id: 'paper-chunky-seal',
-    title: 'We Can Hide More Bits: The Unused Watermarking Capacity in Theory and in Practice (Chunky Seal)',
+    title: 'ChunkySeal: We Can Hide More Bits — The Unused Watermarking Capacity in Theory and in Practice',
     authors: 'Content Seal team (incl. Hady Elsahar)',
     venue: 'arXiv · 2025',
     links: [
@@ -52,13 +52,12 @@ export const papers: Paper[] = [
     authors: 'Seamless Communication Team (incl. Hady Elsahar)',
     venue: 'Nature · 2025',
     links: [
-      { label: 'Nature', href: 'https://www.nature.com/articles/s41586-024-08359-z' },
-      { label: 'PMC', href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11839451/' },
+      { label: 'Nature paper', href: 'https://www.nature.com/articles/s41586-024-08359-z' },
     ],
   },
   {
     id: 'paper-video-seal',
-    title: 'Video Seal: Open and Efficient Video Watermarking',
+    title: 'VideoSeal: Open and Efficient Video Watermarking',
     authors: 'Pierre Fernandez*, Hady Elsahar*, I. Zeki Yalniz, Alexandre Mourachko',
     venue: 'arXiv · Dec 2024',
     thumbnail: '/assets/figures/fig-videoseal.png',
@@ -70,7 +69,7 @@ export const papers: Paper[] = [
   },
   {
     id: 'paper-audio-seal',
-    title: 'Proactive Detection of Voice Cloning with Localized Watermarking (AudioSeal)',
+    title: 'AudioSeal: Proactive Detection of Voice Cloning with Localized Watermarking',
     authors: 'Robin San Roman, Pierre Fernandez, Hady Elsahar, Alexandre Défossez, Teddy Furon, Tuan Tran',
     venue: 'ICML 2024',
     thumbnail: '/assets/figures/fig-audioseal.png',
@@ -82,7 +81,7 @@ export const papers: Paper[] = [
   },
   {
     id: 'paper-seamless',
-    title: 'SeamlessM4T: Massively Multilingual & Multimodal Machine Translation',
+    title: 'SeamlessM4T: Multilingual & Multimodal Translation',
     authors: 'Seamless Communication Team (incl. Hady Elsahar)',
     venue: 'Meta AI · 2023',
     links: [
@@ -90,6 +89,20 @@ export const papers: Paper[] = [
       { label: 'paper', href: 'https://dl.fbaipublicfiles.com/seamless/seamless_m4t_paper.pdf' },
       { label: 'HF', href: 'https://huggingface.co/spaces/facebook/seamless_m4t' },
     ],
+  },
+  {
+    id: 'paper-rl-distribution',
+    title: 'On Reinforcement Learning and Distribution Matching for Fine-Tuning Language Models with no Catastrophic Forgetting',
+    authors: 'Tomasz Korbak, Hady Elsahar, German Kruszewski, Marc Dymetman',
+    venue: 'NeurIPS 2022',
+    links: [{ label: 'paper', href: 'https://arxiv.org/abs/2206.00761' }],
+  },
+  {
+    id: 'paper-approx-sampler',
+    title: 'An Approximate Sampler for Energy-Based Models with Divergence Diagnostics',
+    authors: 'Bryan Eikema, Germán Kruszewski, Christopher R. Dance, Hady Elsahar, Marc Dymetman',
+    venue: 'TMLR 2022',
+    links: [{ label: 'paper', href: 'https://dblp.org/rec/journals/tmlr/EikemaKDED22.html' }],
   },
   {
     id: 'paper-cdpg',
@@ -201,5 +214,19 @@ export const papers: Paper[] = [
       { label: 'paper', href: 'https://arxiv.org/abs/1803.09447' },
       { label: 'code', href: 'https://github.com/pvougiou/Wikidata2Wikipedia' },
     ],
+  },
+  {
+    id: 'paper-neural-wikipedian',
+    title: 'Neural Wikipedian: Generating Textual Summaries from Knowledge Base Triples',
+    authors: 'Pavlos Vougiouklis, Hady Elsahar, Lucie-Aimée Kaffee, Christophe Gravier, Frédérique Laforest, Jonathon Hare, Elena Simperl',
+    venue: 'Journal of Web Semantics · 2018',
+    links: [{ label: 'paper', href: 'https://arxiv.org/abs/1711.00155' }],
+  },
+  {
+    id: 'paper-wiki-underserved',
+    title: 'Learning to Generate Wikipedia Summaries for Underserved Languages from Wikidata',
+    authors: 'Lucie-Aimée Kaffee, Hady Elsahar, Pavlos Vougiouklis, Christophe Gravier, Frédérique Laforest, Jonathon Hare, Elena Simperl',
+    venue: 'NAACL 2018',
+    links: [{ label: 'paper', href: 'https://arxiv.org/abs/1803.07116' }],
   },
 ];

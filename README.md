@@ -19,8 +19,32 @@ sqlite conflict is resolved.
 ```bash
 export PATH="$HOME/.local/node/bin:$PATH"  # or however you have node 22+
 npm install
-npm run dev
+npm run dev            # site only, at http://localhost:4321
+npm run edit           # site + visual editor (see "Editing in the browser")
 ```
+
+## Editing in the browser (visual editor)
+
+Run `npm run edit`. This starts two things together:
+
+- **Astro dev server** at `http://localhost:4321`
+- **Decap CMS proxy** (`decap-server`) at port `8081`, which lets the editor
+  read and write the real Markdown files on disk.
+
+Then open the editor at:
+
+```
+http://localhost:4321/admin/
+```
+
+You'll see a "Blog Posts" collection. Click a post to edit it, or "New Post" to
+create one — title, description, date, tags, draft toggle, and a rich Markdown
+body. Saving writes straight to `src/content/posts/` (no login, no deploy). The
+Astro dev server hot-reloads, so the change shows up on the site immediately.
+
+> Note: the config uses `local_backend: true`, so editing only touches local
+> files. Publishing still happens the normal way — commit and push to `main`.
+> If you're on a remote/SSH dev box, forward **both** ports `4321` and `8081`.
 
 ## Build
 
@@ -31,6 +55,12 @@ npx astro check     # type-checks Astro + TS
 ```
 
 ## Writing a new post
+
+**Option A — visual editor (easiest):** run `npm run edit` and open
+`http://localhost:4321/admin/`. Create/edit posts with a form + rich
+Markdown editor; saves write to `src/content/posts/` automatically.
+
+**Option B — by hand:**
 
 1. Create `src/content/posts/<slug>.md` (or `.mdx` if you want components).
 2. Frontmatter:
@@ -65,19 +95,20 @@ production URL (the placeholder is `https://hadyelsahar.github.io`).
 
 ```
 .
-├── _legacy/                    # original standalone HTML (index, talks, nk48-2022) — DO NOT DELETE
-├── _extracted/                 # narrative-strategy + extraction reports — DO NOT DELETE
-├── website_old.txt             # raw text dump of the old site — DO NOT DELETE
-├── Squarespace-Wordpress-Export-05-20-2026.xml  # source export — DO NOT DELETE
 ├── public/                     # served verbatim at /
-│   ├── assets/                 # images (paper thumbnails, profile, logo) — URLs stable as /assets/...
+│   ├── admin/                  # Decap CMS config (config.yml)
+│   ├── assets/                 # images, figures, demo galleries + ONNX models
+│   ├── robots.txt
 │   ├── favicon.ico
 │   └── favicon.svg
 ├── src/
-│   ├── components/             # Nav.astro, Footer.astro (stubs)
-│   ├── content/                # blog collections (config.ts pending)
+│   ├── components/             # Nav, Footer, Eyebrow, LinkChip, PaperCard
+│   ├── content/                # blog collections (posts/)
+│   ├── content.config.ts       # posts schema (zod)
+│   ├── data/                   # papers.ts, projects.ts
 │   ├── layouts/                # BaseLayout.astro
-│   ├── pages/                  # index.astro + routes
+│   ├── lib/                    # url.ts (withBase helper)
+│   ├── pages/                  # index.astro + routes (talks, posts, demos, admin, rss)
 │   └── styles/                 # global.css (Tailwind v4 entry)
 ├── .github/workflows/deploy.yml
 ├── astro.config.mjs

@@ -36,7 +36,6 @@ const jsonLd = {
   "sameAs": [
     "https://scholar.google.com/citations?hl=en&user=SbcM6bsAAAAJ",
     "https://github.com/hadyelsahar",
-    "https://twitter.com/hadyelsahar",
     "https://www.linkedin.com/in/hadyelsahar/",
     "https://bsky.app/profile/hadyelsahar.bsky.social"
   ],
@@ -68,7 +67,6 @@ const jsonLd = {
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:site_name" content="Hady Elsahar" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@hadyelsahar" />
     <meta name="twitter:title" content={siteTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
@@ -94,6 +92,28 @@ const jsonLd = {
     />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <!--
+      Analytics: GoatCounter — loads ONLY on the production domain, so localhost,
+      the *.github.io URL, and previews are never counted.
+      Setup: free account at https://www.goatcounter.com/ with subdomain `hadyelsahar`.
+      Testing: append `?gctest` to any URL (e.g. localhost) to force a test pageview
+      (this also sets allow_local so GoatCounter accepts counts from localhost).
+    -->
+    <script is:inline>
+      (function () {
+        var prodHosts = ['hadyelsahar.com', 'www.hadyelsahar.com'];
+        var isProd = prodHosts.indexOf(location.hostname) !== -1;
+        var isTest = location.search.indexOf('gctest') !== -1;
+        if (!isProd && !isTest) return;
+        if (isTest) window.goatcounter = { allow_local: true };
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = '//gc.zgo.at/count.js';
+        s.setAttribute('data-goatcounter', 'https://hadyelsahar.goatcounter.com/count');
+        document.head.appendChild(s);
+      })();
+    </script>
 
     <slot name="head" />
   </head>

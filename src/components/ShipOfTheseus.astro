@@ -1,0 +1,313 @@
+---
+// Ship of Theseus interactive modal — TEMPORARILY DISABLED (not imported anywhere).
+//
+// To re-enable:
+//   1. In src/pages/index.astro, import this component:
+//        import ShipOfTheseus from '../components/ShipOfTheseus.astro';
+//   2. Render <ShipOfTheseus /> near the end of the page (before </BaseLayout>).
+//   3. Restore the trigger on the "Ship of Theseus" link in the header:
+//        add id="theseus-link" data-theseus-open and remove target="_blank" rel="noopener"
+//      so it opens this modal instead of navigating to Wikipedia.
+---
+
+<div id="theseus-modal" class="sot-overlay" hidden>
+  <div class="sot-card" role="dialog" aria-modal="true" aria-label="Ship of Theseus" tabindex="-1">
+    <button type="button" class="sot-close" data-theseus-close aria-label="Close">&times;</button>
+
+    <p class="sot-verdict"><span id="sot-state">the old ship</span></p>
+
+    <div class="sot-scene" id="sot-scene">
+      <svg class="sot-ship" viewBox="0 0 480 360" role="img" aria-labelledby="sot-svg-title" preserveAspectRatio="xMidYMid meet">
+        <title id="sot-svg-title">A sailboat whose planks are replaced one by one as the light turns from dawn to dusk</title>
+        <defs>
+          <clipPath id="sot-clip"><rect x="0" y="0" width="480" height="360" rx="14" /></clipPath>
+          <linearGradient id="sot-sky-old" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4c606e" /><stop offset="0.6" stop-color="#8296a0" /><stop offset="1" stop-color="#aebdc4" />
+          </linearGradient>
+          <linearGradient id="sot-sky-new" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3d5170" /><stop offset="0.45" stop-color="#c9713f" /><stop offset="1" stop-color="#f2c777" />
+          </linearGradient>
+          <radialGradient id="sot-sun" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#fff6e2" /><stop offset="0.55" stop-color="var(--sun-core)" /><stop offset="1" stop-color="var(--sun-core)" stop-opacity="0" />
+          </radialGradient>
+          <filter id="sot-ink" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.2" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          <filter id="sot-soft"><feGaussianBlur stdDeviation="1.6" /></filter>
+        </defs>
+
+        <g clip-path="url(#sot-clip)">
+          <!-- sky: cold dawn cross-fading to warm dusk -->
+          <rect x="0" y="0" width="480" height="360" fill="url(#sot-sky-old)" />
+          <rect id="sot-sky" x="0" y="0" width="480" height="360" fill="url(#sot-sky-new)" opacity="0" />
+          <!-- sun / moon -->
+          <circle id="sot-sun" cx="120" cy="230" r="34" fill="url(#sot-sun)" />
+
+          <!-- water -->
+          <rect x="0" y="248" width="480" height="112" fill="#000" opacity="0.16" />
+
+          <!-- reflection of the ship, flipped under the waterline -->
+          <use href="#sot-ship-body" transform="matrix(1 0 0 -1 0 496)" class="sot-reflection" filter="url(#sot-soft)" />
+
+          <!-- rolling waves over the reflection -->
+          <g class="sot-sea" aria-hidden="true">
+            <path d="M-40 268 q42 -12 84 0 t84 0 t84 0 t84 0 t84 0 t84 0" />
+            <path d="M-60 292 q46 -11 92 0 t92 0 t92 0 t92 0 t92 0" />
+            <path d="M-30 314 q40 -9 80 0 t80 0 t80 0 t80 0 t80 0 t80 0" />
+          </g>
+
+          <!-- the ship -->
+          <g id="sot-ship-body" class="sot-drawing" filter="url(#sot-ink)">
+            <line class="sot-spar" x1="234" y1="196" x2="234" y2="40" />
+            <line class="sot-spar" x1="234" y1="46" x2="342" y2="82" />
+            <line class="sot-spar" x1="234" y1="192" x2="352" y2="150" />
+
+            <path id="sot-sail" class="sot-sail" d="M234 54 L336 84 Q356 118 346 150 L234 190 Q232 120 234 54 Z" />
+
+            <g class="sot-hull">
+              <path class="sot-part" data-i="0" d="M60 190 Q240 214 420 190 Q240 236 60 190 Z" />
+              <path class="sot-part" data-i="1" d="M60 190 Q240 236 420 190 Q240 258 60 190 Z" />
+              <path class="sot-part" data-i="2" d="M60 190 Q240 258 420 190 Q240 280 60 190 Z" />
+              <path class="sot-part" data-i="3" d="M60 190 Q240 280 420 190 Q240 300 60 190 Z" />
+            </g>
+            <path class="sot-part sot-deck" data-i="4" d="M60 190 Q240 206 420 190 Q240 176 60 190 Z" />
+            <g class="sot-deck-lines">
+              <path d="M150 189 q0 8 3 14" /><path d="M225 191 q0 9 2 15" /><path d="M300 189 q0 8 -3 14" />
+            </g>
+            <path class="sot-stem" d="M60 190 Q46 166 68 148" />
+            <path class="sot-stem" d="M420 190 Q434 166 412 148" />
+          </g>
+        </g>
+      </svg>
+      <div class="sot-sparks" id="sot-sparks" aria-hidden="true"></div>
+      <div class="sot-drag-hint" id="sot-hint">drag to sail through the years →</div>
+    </div>
+
+    <input type="range" id="sot-scrub" class="sot-scrub" min="0" max="100" value="0" step="1"
+           aria-label="Replace the ship's timbers over time" />
+  </div>
+</div>
+
+<style is:global>
+  .sot-overlay {
+    position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
+    padding: clamp(12px, 4vw, 32px);
+    background: color-mix(in srgb, #05080c 72%, transparent);
+    backdrop-filter: blur(6px); opacity: 0; transition: opacity .3s ease;
+  }
+  .sot-overlay[hidden] { display: none; }
+  .sot-overlay.is-open { opacity: 1; }
+
+  .sot-card {
+    --wood-old: #6b6053; --wood-new: #b0722c;
+    --deck-old: #786c5c; --deck-new: #c98a45;
+    --sail-old: #c3beb4; --sail-new: #f6f4ee;
+    --sun-core: #cddbe2;
+    position: relative; width: min(600px, 100%); max-height: 94vh; overflow: hidden;
+    background: var(--color-card); color: var(--color-ink);
+    border: 1px solid var(--color-border); border-radius: 18px;
+    box-shadow: 0 34px 90px -24px rgba(0,0,0,.6);
+    padding: clamp(24px, 4vw, 40px) clamp(22px, 4vw, 44px) clamp(28px, 4vw, 40px);
+    transform: translateY(14px) scale(.98);
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .sot-overlay.is-open .sot-card { transform: none; }
+  html.dark .sot-card { --wood-old: #7f7364; --sail-old: #9c978d; }
+
+  .sot-close {
+    position: absolute; top: 12px; right: 14px; width: 32px; height: 32px; border-radius: 999px;
+    border: 0; background: transparent; color: var(--color-muted-2); z-index: 3;
+    font-size: 22px; line-height: 1; cursor: pointer; transition: color .15s;
+  }
+  .sot-close:hover { color: var(--color-ink); }
+
+  /* the one morphing line */
+  .sot-verdict { text-align: center; margin: 0 0 14px; min-height: 1.4em; }
+  .sot-verdict span {
+    display: inline-block; font-family: var(--font-display); font-style: italic; font-weight: 500;
+    font-size: clamp(22px, 4.4vw, 34px); letter-spacing: -.01em; color: var(--color-ink-soft);
+    transition: color .5s ease, opacity .25s ease, transform .25s ease;
+  }
+  .sot-verdict.is-swap span { opacity: 0; transform: translateY(-6px); }
+  .sot-verdict.is-wavering span { color: var(--color-accent); }
+
+  /* scene */
+  .sot-scene {
+    position: relative; width: 100%; max-width: 480px; margin: 0 auto 18px;
+    border-radius: 14px; overflow: hidden; cursor: ew-resize;
+    box-shadow: inset 0 0 0 1px var(--color-border), 0 12px 30px -14px rgba(0,0,0,.5);
+  }
+  /* subtle top light + bottom vignette for depth */
+  .sot-scene::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 14px;
+    background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.18), transparent 55%),
+                radial-gradient(140% 60% at 50% 120%, rgba(0,0,0,.28), transparent 60%);
+  }
+  .sot-ship { display: block; width: 100%; height: auto; }
+  .sot-drawing { fill: none; stroke: #211d18; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .sot-reflection { opacity: .16; }
+  .sot-sea path { fill: none; stroke: rgba(255,255,255,.5); stroke-width: 1.6; stroke-linecap: round; opacity: .5; }
+  .sot-part { fill: var(--wood-old); transition: fill .55s cubic-bezier(.22,1,.36,1); }
+  .sot-part.is-new { fill: var(--wood-new); }
+  .sot-deck { fill: var(--deck-old); }
+  .sot-deck.is-new { fill: var(--deck-new); }
+  .sot-deck-lines path { stroke-width: 1.4; opacity: .45; }
+  .sot-sail { fill: var(--sail-old); transition: fill .2s linear; }
+  .sot-spar { stroke: #3c2f1e; stroke-width: 3; }
+  .sot-stem { stroke-width: 2.4; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sot-drawing { animation: sot-bob 5.5s ease-in-out infinite; transform-origin: 240px 210px; }
+    @keyframes sot-bob { 0%,100% { transform: rotate(-1deg) translateY(0); } 50% { transform: rotate(1deg) translateY(-3px); } }
+    .sot-sea { animation: sot-drift 7s ease-in-out infinite; }
+    @keyframes sot-drift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
+  }
+
+  /* sawdust / ember sparks when a plank renews */
+  .sot-sparks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .sot-spark {
+    position: absolute; width: 4px; height: 4px; border-radius: 999px;
+    background: #f4d38a; box-shadow: 0 0 6px 1px rgba(244,211,138,.8);
+    animation: sot-rise 1.1s ease-out forwards;
+  }
+  @keyframes sot-rise {
+    0% { opacity: 0; transform: translateY(0) scale(.6); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-46px) translateX(var(--dx,0)) scale(1); }
+  }
+
+  .sot-drag-hint {
+    position: absolute; left: 0; right: 0; bottom: 10px; text-align: center;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.82); text-shadow: 0 1px 3px rgba(0,0,0,.5);
+    pointer-events: none; transition: opacity .4s ease;
+  }
+  .sot-scene.is-touched .sot-drag-hint { opacity: 0; }
+
+  /* slider */
+  .sot-scrub { -webkit-appearance: none; appearance: none; display: block; width: min(340px, 90%); margin: 0 auto; height: 8px; background: transparent; cursor: pointer; }
+  .sot-scrub::-webkit-slider-runnable-track { height: 5px; border-radius: 999px; background: linear-gradient(90deg, var(--wood-old), var(--wood-new)); }
+  .sot-scrub::-moz-range-track { height: 5px; border-radius: 999px; background: linear-gradient(90deg, var(--wood-old), var(--wood-new)); }
+  .sot-scrub::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; margin-top: -6px; width: 16px; height: 16px; border-radius: 999px;
+    background: var(--color-card); border: 2px solid var(--color-ink); box-shadow: 0 1px 4px rgba(0,0,0,.25); transition: transform .1s;
+  }
+  .sot-scrub::-moz-range-thumb { width: 14px; height: 14px; border-radius: 999px; background: var(--color-card); border: 2px solid var(--color-ink); }
+  .sot-scrub:active::-webkit-slider-thumb { transform: scale(1.15); }
+  .sot-scrub:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sot-overlay, .sot-card, .sot-part, .sot-drawing, .sot-sea, .sot-spark { transition: none; animation: none; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var overlay = document.getElementById('theseus-modal');
+    var link = document.getElementById('theseus-link');
+    if (!overlay || !link) return;
+
+    var card = overlay.querySelector('.sot-card');
+    var scrub = document.getElementById('sot-scrub');
+    var scene = document.getElementById('sot-scene');
+    var parts = Array.prototype.slice.call(overlay.querySelectorAll('.sot-part'));
+    var sail = document.getElementById('sot-sail');
+    var sky = document.getElementById('sot-sky');
+    var sun = document.getElementById('sot-sun');
+    var stateEl = document.getElementById('sot-state');
+    var verdict = overlay.querySelector('.sot-verdict');
+    var sparks = document.getElementById('sot-sparks');
+    var lastFocus = null, curText = '';
+
+    parts.forEach(function (p, i) { p.dataset.threshold = String((i + 0.6) / (parts.length + 0.4)); p.dataset.on = ''; });
+    function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function mix(c1, c2, t) {
+      return 'rgb(' + Math.round(lerp(c1[0], c2[0], t)) + ',' + Math.round(lerp(c1[1], c2[1], t)) + ',' + Math.round(lerp(c1[2], c2[2], t)) + ')';
+    }
+    var sunOld = [205, 219, 226], sunNew = [255, 214, 130];
+
+    function emitSparks() {
+      for (var i = 0; i < 5; i++) {
+        var s = document.createElement('span');
+        s.className = 'sot-spark';
+        s.style.left = (38 + Math.random() * 44) + '%';
+        s.style.top = (52 + Math.random() * 22) + '%';
+        s.style.setProperty('--dx', (Math.random() * 24 - 12) + 'px');
+        s.style.animationDelay = (Math.random() * 0.12) + 's';
+        sparks.appendChild(s);
+        setTimeout(function (el) { return function () { el.remove(); }; }(s), 1300);
+      }
+    }
+
+    function setText(txt, wavering) {
+      verdict.classList.toggle('is-wavering', !!wavering);
+      if (txt === curText) return;
+      curText = txt;
+      verdict.classList.add('is-swap');
+      setTimeout(function () { stateEl.textContent = txt; verdict.classList.remove('is-swap'); }, 180);
+    }
+
+    function render(t, animate) {
+      parts.forEach(function (p) {
+        var on = t >= Number(p.dataset.threshold);
+        if (on && p.dataset.on !== '1' && animate) emitSparks();
+        p.dataset.on = on ? '1' : '';
+        p.classList.toggle('is-new', on);
+      });
+      var s = Math.round(clamp01((t - 0.05) / 0.85) * 100);
+      sail.style.fill = 'color-mix(in srgb, var(--sail-new) ' + s + '%, var(--sail-old))';
+
+      // sky dawn -> dusk, sun rises and warms
+      sky.setAttribute('opacity', t.toFixed(3));
+      card.style.setProperty('--sun-core', mix(sunOld, sunNew, t));
+      sun.setAttribute('cx', lerp(110, 372, t).toFixed(1));
+      sun.setAttribute('cy', lerp(206, 96, t).toFixed(1));
+      sun.setAttribute('r', lerp(30, 40, t).toFixed(1));
+
+      if (t <= 0.001) setText('the old ship', false);
+      else if (t >= 0.999) setText('the new ship', false);
+      else if (t >= 0.32 && t <= 0.68) setText('the same ship?', true);
+      else if (t < 0.5) setText('mostly the old ship', false);
+      else setText('mostly the new ship', false);
+    }
+
+    // drag anywhere on the scene to scrub
+    var dragging = false;
+    function scrubFromX(clientX) {
+      var r = scene.getBoundingClientRect();
+      var t = clamp01((clientX - r.left) / r.width);
+      scrub.value = Math.round(t * 100);
+      scene.classList.add('is-touched');
+      render(t, true);
+    }
+    scene.addEventListener('pointerdown', function (e) { dragging = true; scene.setPointerCapture(e.pointerId); scrubFromX(e.clientX); });
+    scene.addEventListener('pointermove', function (e) { if (dragging) scrubFromX(e.clientX); });
+    scene.addEventListener('pointerup', function () { dragging = false; });
+    scene.addEventListener('pointercancel', function () { dragging = false; });
+
+    function reset() { scrub.value = 0; scene.classList.remove('is-touched'); render(0, false); }
+
+    function open() {
+      lastFocus = document.activeElement;
+      overlay.hidden = false;
+      requestAnimationFrame(function () { overlay.classList.add('is-open'); });
+      reset(); card.focus();
+      document.addEventListener('keydown', onKey);
+    }
+    function close() {
+      overlay.classList.remove('is-open');
+      document.removeEventListener('keydown', onKey);
+      setTimeout(function () { overlay.hidden = true; }, 300);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+
+    link.addEventListener('click', function (e) { e.preventDefault(); open(); });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay || e.target.hasAttribute('data-theseus-close')) close();
+    });
+    scrub.addEventListener('input', function () { scene.classList.add('is-touched'); render(Number(scrub.value) / 100, true); });
+  })();
+</script>

@@ -1,0 +1,27 @@
+{
+  "nbits": 16,
+  "sr": 16000,
+  "clips": [
+    {
+      "id": "arpeggio",
+      "orig": "arpeggio_orig.wav",
+      "wm": "arpeggio_wm.wav",
+      "bits": "0001001001011000",
+      "snr": 28.9
+    },
+    {
+      "id": "melody",
+      "orig": "melody_orig.wav",
+      "wm": "melody_wm.wav",
+      "bits": "1110100010011011",
+      "snr": 32.0
+    },
+    {
+      "id": "pad",
+      "orig": "pad_orig.wav",
+      "wm": "pad_wm.wav",
+      "bits": "1110110101001001",
+      "snr": 46.5
+    }
+  ]
+}

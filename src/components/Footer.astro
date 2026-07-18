@@ -1,35 +1,11 @@
 ---
-const socials = [
-  { label: 'Email', href: 'mailto:hadyelsahar@gmail.com' },
-  { label: 'Google Scholar', href: 'https://scholar.google.com/citations?hl=en&user=SbcM6bsAAAAJ' },
-  { label: 'DBLP', href: 'https://dblp.uni-trier.de/pers/hd/e/ElSahar:Hady' },
-  { label: 'GitHub', href: 'https://github.com/hadyelsahar' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/hadyelsahar/' },
-  { label: 'Twitter', href: 'https://twitter.com/hadyelsahar' },
-  { label: 'Bluesky', href: 'https://bsky.app/profile/hadyelsahar.bsky.social' },
-  { label: 'Hugging Face', href: 'https://huggingface.co/hadyelsahar' },
-];
-
 const year = new Date().getFullYear();
 ---
 
 <footer class="mt-24 border-t border-border">
   <div class="mx-auto max-w-[900px] px-6 py-12">
-    <div class="flex flex-wrap gap-x-5 gap-y-2 text-[13px]">
-      {socials.map((s) => (
-        <a href={s.href} target="_blank" rel="me noopener noreferrer" class="text-muted hover:text-accent transition-colors">
-          {s.label}
-        </a>
-      ))}
-    </div>
-
-    <p class="mt-6 text-[12.5px] text-muted leading-[1.6] max-w-[60ch]">
-      Open to mentorship. If you're a young researcher from an under-represented group and want
-      advice or encouragement, feel free to reach out.
-    </p>
-
-    <p class="mt-6 font-mono text-[11px] text-muted-2">
-      © {year} Hady Elsahar · Built with Astro
+    <p class="font-mono text-[11px] text-muted-2">
+      © {year} Hady Elsahar
     </p>
   </div>
 </footer>

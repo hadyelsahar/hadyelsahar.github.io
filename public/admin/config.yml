@@ -1,0 +1,43 @@
+# Decap CMS configuration
+#
+# LOCAL EDITING (what you use now):
+#   `local_backend: true` lets the /admin editor read & write the real Markdown
+#   files in src/content/posts/ through a small proxy (decap-server) that runs
+#   alongside `astro dev`. No login, no deploy — just edit and save to disk.
+#   Start everything with:  npm run edit
+#
+# PUBLISHING LATER (optional):
+#   The `backend` block below is only used when NOT running locally (i.e. when
+#   the /admin page is opened on the deployed github.io site). To enable it you'd
+#   set up GitHub OAuth. For now it's harmless and ignored during local editing.
+
+local_backend: true
+
+backend:
+  name: github
+  repo: hadyelsahar/hadyelsahar.github.io
+  branch: main
+
+# Where uploaded images/files are written and how they're referenced in Markdown.
+media_folder: "public/assets/blog"
+public_folder: "/assets/blog"
+
+collections:
+  - name: "posts"
+    label: "Blog Posts"
+    label_singular: "Post"
+    folder: "src/content/posts"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "yaml-frontmatter"
+    summary: "{{title}} — {{pubDate}}"
+    sortable_fields: ["pubDate", "title"]
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "description", label: "Description (one-line deck)", widget: "text", required: false }
+      - { name: "pubDate", label: "Publish Date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, picker_utc: true }
+      - { name: "updated", label: "Updated Date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, picker_utc: true, required: false }
+      - { name: "tags", label: "Tags", widget: "list", default: [], required: false }
+      - { name: "draft", label: "Draft (hide from public list)", widget: "boolean", default: false }
+      - { name: "body", label: "Body", widget: "markdown" }

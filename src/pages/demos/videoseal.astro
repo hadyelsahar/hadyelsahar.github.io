@@ -1,0 +1,401 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../lib/url.ts';
+
+const cfg = {
+  model: withBase('/assets/demos/videoseal/detector.fp16.onnx'),
+  embedder: withBase('/assets/demos/videoseal/embedder.fp16.onnx'),
+  gallery: withBase('/assets/demos/videoseal/gallery/gallery.json'),
+  galleryDir: withBase('/assets/demos/videoseal/gallery/'),
+};
+---
+
+<BaseLayout
+  title="Watermark Detection Demo"
+  description="Detect Meta VideoSeal invisible watermarks live in your browser. Attack a watermarked image (JPEG, resize, crop, noise) and watch the recovered bits survive."
+>
+  <section class="mx-auto max-w-[900px] px-6 pt-12 md:pt-16 pb-10">
+    <p class="font-mono text-[11px] uppercase tracking-[0.15em] text-accent">Runs 100% in your browser</p>
+    <h1 class="mt-2 font-display text-[34px] md:text-[46px] font-semibold tracking-[-0.02em] leading-[1.02] text-ink">
+      Can you wash out an invisible watermark?
+    </h1>
+    <p class="mt-4 text-[15.5px] leading-[1.6] text-ink-soft max-w-[68ch]">
+      These images carry an <span class="font-medium text-ink">invisible watermark</span> embedded with Meta's
+      <a class="link" href="https://github.com/facebookresearch/videoseal">VideoSeal</a> (a 256-bit message you can't see).
+      Attack an image below, then run the detector and watch how many of the 256 bits survive. The
+      <span class="font-medium text-ink">67 MB detector runs entirely on your device</span> via ONNX Runtime Web,
+      no server, no upload.
+    </p>
+
+    <!-- Load model -->
+    <div id="loader" class="mt-8 rounded-[10px] border border-border bg-bg-subtle p-5">
+      <button id="load-btn" class="inline-flex items-center gap-2 rounded-md border border-accent bg-accent-soft px-4 py-2 font-mono text-[12.5px] text-accent hover:bg-accent hover:text-bg transition-colors">
+        ▶ Load detector (67 MB, cached after first load)
+      </button>
+      <div id="load-progress" class="mt-3 hidden">
+        <div class="h-1.5 w-full overflow-hidden rounded-full bg-border">
+          <div id="load-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div>
+        </div>
+        <p id="load-msg" class="mt-2 font-mono text-[11px] text-muted"></p>
+      </div>
+    </div>
+
+    <!-- Demo (revealed after load) -->
+    <div id="demo" class="mt-8 hidden">
+      <!-- Gallery -->
+      <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Pick a watermarked image</p>
+      <div id="gallery" class="mt-2 flex flex-wrap gap-3"></div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8 items-start">
+        <!-- Canvas + view toggle -->
+        <div>
+          <div class="relative w-[300px] h-[300px] rounded-[8px] border border-border overflow-hidden bg-figure">
+            <canvas id="view" width="256" height="256" class="w-full h-full [image-rendering:auto]"></canvas>
+          </div>
+          <div class="mt-2 flex gap-1 font-mono text-[11px]">
+            <button data-view="attacked" class="view-tab px-2.5 py-1 rounded border border-border">Attacked</button>
+            <button data-view="wm" class="view-tab px-2.5 py-1 rounded border border-border">Watermarked</button>
+            <button data-view="orig" class="view-tab px-2.5 py-1 rounded border border-border">Original</button>
+            <button data-view="heat" class="view-tab px-2.5 py-1 rounded border border-border">Heatmap</button>
+          </div>
+          <p class="mt-2 font-mono text-[10.5px] text-muted-2" id="view-note">The watermark is invisible at 256×256. "Heatmap" shows the residual, amplified ~18×.</p>
+        </div>
+
+        <!-- Controls + result -->
+        <div>
+          <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Attack the image</p>
+          <div class="mt-3 space-y-3">
+            <label class="block">
+              <span class="font-mono text-[11px] text-ink-soft">JPEG quality <b id="v-jpeg" class="text-accent">100</b></span>
+              <input id="a-jpeg" type="range" min="5" max="100" value="100" class="w-full accent-[var(--color-accent)]" />
+            </label>
+            <label class="block">
+              <span class="font-mono text-[11px] text-ink-soft">Downscale <b id="v-scale" class="text-accent">100</b>%</span>
+              <input id="a-scale" type="range" min="15" max="100" value="100" class="w-full accent-[var(--color-accent)]" />
+            </label>
+            <label class="block">
+              <span class="font-mono text-[11px] text-ink-soft">Center crop <b id="v-crop" class="text-accent">100</b>%</span>
+              <input id="a-crop" type="range" min="40" max="100" value="100" class="w-full accent-[var(--color-accent)]" />
+            </label>
+            <label class="block">
+              <span class="font-mono text-[11px] text-ink-soft">Gaussian noise <b id="v-noise" class="text-accent">0</b></span>
+              <input id="a-noise" type="range" min="0" max="60" value="0" class="w-full accent-[var(--color-accent)]" />
+            </label>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <button id="reset-btn" class="rounded-md border border-border px-3 py-1.5 font-mono text-[11.5px] text-ink-soft hover:border-ink transition-colors">↺ Reset attacks</button>
+            <label class="rounded-md border border-border px-3 py-1.5 font-mono text-[11.5px] text-ink-soft hover:border-ink transition-colors cursor-pointer">
+              ↥ Watermark your own image<input id="upload" type="file" accept="image/*" class="hidden" />
+            </label>
+          </div>
+          <div id="emb-progress" class="mt-2 hidden">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-border">
+              <div id="emb-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div>
+            </div>
+            <p id="emb-msg" class="mt-1 font-mono text-[10.5px] text-muted"></p>
+          </div>
+
+          <!-- Result -->
+          <div class="mt-6 rounded-[10px] border border-border bg-card p-4">
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Bits recovered</p>
+                <p class="mt-1"><span id="acc-val" class="font-display text-[34px] font-semibold text-ink leading-none">--</span><span class="text-[15px] text-muted"> / 256</span></p>
+              </div>
+              <p id="verdict" class="font-mono text-[12px] px-2.5 py-1 rounded-full border border-border text-muted">idle</p>
+            </div>
+            <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-border">
+              <div id="acc-bar" class="h-full w-0 transition-[width] duration-300" style="background: var(--color-accent);"></div>
+            </div>
+            <div id="bitgrid" class="mt-4 grid gap-[2px]" style="grid-template-columns: repeat(32, 1fr);"></div>
+            <p class="mt-2 font-mono text-[10px] text-muted-2">Each cell = one of 256 bits. <span class="text-accent">■</span> correct · <span style="color:#d1495b">■</span> flipped. ~50% = watermark destroyed (chance).</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-8 text-[12px] text-muted">
+        VideoSeal 1.0 (ConvNeXt-tiny extractor + YUV U-Net embedder), exported to fp16 ONNX and run entirely
+        in your browser via ONNX Runtime Web. The gallery images were embedded offline; “Watermark your own
+        image” embeds a fresh random 256-bit message on-device (the ~47 MB embedder downloads on first use).
+        Model + method:
+        <a class="link" href="https://github.com/facebookresearch/videoseal">facebookresearch/videoseal</a>.
+      </p>
+    </div>
+  </section>
+
+  <script type="application/json" id="vs-cfg" set:html={JSON.stringify(cfg)}></script>
+
+  <script is:inline>
+    (function () {
+      const cfg = JSON.parse(document.getElementById('vs-cfg').textContent);
+      const ORT_VER = '1.20.1';
+      let ort = null, session = null, embedder = null, gallery = null, current = null;
+      // base watermarked image data (clean, before attacks) + original/heat for view toggles
+      const bases = {}; // {wm: ImageData, orig, heat}
+      let curView = 'attacked', lastAttacked = null;
+
+      const $ = (id) => document.getElementById(id);
+      const work = document.createElement('canvas'); work.width = work.height = 256;
+      const wctx = work.getContext('2d', { willReadFrequently: true });
+      const viewCanvas = () => $('view');
+
+      function draw(imgData) {
+        viewCanvas().getContext('2d').putImageData(imgData, 0, 0);
+      }
+      async function imgToData(url) {
+        const im = new Image(); im.crossOrigin = 'anonymous'; im.src = url;
+        await im.decode();
+        wctx.clearRect(0, 0, 256, 256); wctx.drawImage(im, 0, 0, 256, 256);
+        return wctx.getImageData(0, 0, 256, 256);
+      }
+
+      // ---- attacks (operate on the clean watermarked ImageData) ----
+      function cropScale(src, cropPct) {
+        // center-crop cropPct then rescale to 256
+        const c = document.createElement('canvas'); c.width = c.height = 256;
+        const cx = c.getContext('2d');
+        const tmp = document.createElement('canvas'); tmp.width = tmp.height = 256;
+        tmp.getContext('2d').putImageData(src, 0, 0);
+        const s = Math.round(256 * cropPct / 100), off = Math.floor((256 - s) / 2);
+        cx.imageSmoothingEnabled = true;
+        cx.drawImage(tmp, off, off, s, s, 0, 0, 256, 256);
+        return cx.getImageData(0, 0, 256, 256);
+      }
+      function downscale(src, pct) {
+        const s = Math.max(8, Math.round(256 * pct / 100));
+        const small = document.createElement('canvas'); small.width = small.height = s;
+        const tmp = document.createElement('canvas'); tmp.width = tmp.height = 256;
+        tmp.getContext('2d').putImageData(src, 0, 0);
+        const sc = small.getContext('2d'); sc.imageSmoothingEnabled = true;
+        sc.drawImage(tmp, 0, 0, s, s);
+        const c = document.createElement('canvas'); c.width = c.height = 256;
+        const cx = c.getContext('2d'); cx.imageSmoothingEnabled = true;
+        cx.drawImage(small, 0, 0, s, s, 0, 0, 256, 256);
+        return cx.getImageData(0, 0, 256, 256);
+      }
+      function addNoise(src, sigma) {
+        const d = new Uint8ClampedArray(src.data);
+        for (let i = 0; i < d.length; i += 4) {
+          const n = () => (Math.random() + Math.random() + Math.random() - 1.5) * sigma; // ~gaussian
+          d[i] += n(); d[i + 1] += n(); d[i + 2] += n();
+        }
+        return new ImageData(d, 256, 256);
+      }
+      async function jpeg(src, q) {
+        const tmp = document.createElement('canvas'); tmp.width = tmp.height = 256;
+        tmp.getContext('2d').putImageData(src, 0, 0);
+        const blob = await new Promise((r) => tmp.toBlob(r, 'image/jpeg', q / 100));
+        const bmp = await createImageBitmap(blob);
+        const c = document.createElement('canvas'); c.width = c.height = 256;
+        const cx = c.getContext('2d'); cx.drawImage(bmp, 0, 0, 256, 256);
+        return cx.getImageData(0, 0, 256, 256);
+      }
+
+      async function applyAttacks() {
+        if (!bases.wm) return;
+        let img = bases.wm;
+        const crop = +$('a-crop').value, scale = +$('a-scale').value, q = +$('a-jpeg').value, noise = +$('a-noise').value;
+        if (crop < 100) img = cropScale(img, crop);
+        if (scale < 100) img = downscale(img, scale);
+        if (q < 100) img = await jpeg(img, q);
+        if (noise > 0) img = addNoise(img, noise);
+        lastAttacked = img;
+        if (curView === 'attacked') draw(img);
+        await detect(img);
+      }
+
+      // ---- detector ----
+      function toTensor(imgData) {
+        const { data } = imgData, n = 256 * 256, f = new Float32Array(3 * n);
+        for (let i = 0; i < n; i++) { f[i] = data[i * 4] / 255; f[n + i] = data[i * 4 + 1] / 255; f[2 * n + i] = data[i * 4 + 2] / 255; }
+        return new ort.Tensor('float32', f, [1, 3, 256, 256]);
+      }
+
+      // ---- embedder (watermark the user's own image, lazy-loaded) ----
+      function randomMessage() {
+        const bits = new Uint8Array(256), big = new BigInt64Array(256);
+        const rnd = new Uint8Array(256); crypto.getRandomValues(rnd);
+        for (let i = 0; i < 256; i++) { bits[i] = rnd[i] & 1; big[i] = BigInt(bits[i]); }
+        return { bits, tensor: new ort.Tensor('int64', big, [1, 256]) };
+      }
+      function tensorToImageData(t) {
+        const d = t.data, n = 256 * 256, out = new Uint8ClampedArray(4 * n);
+        for (let i = 0; i < n; i++) {
+          out[i * 4] = d[i] * 255; out[i * 4 + 1] = d[n + i] * 255; out[i * 4 + 2] = d[2 * n + i] * 255; out[i * 4 + 3] = 255;
+        }
+        return new ImageData(out, 256, 256);
+      }
+      function residualHeat(wm, orig, amp = 18) {
+        const a = wm.data, b = orig.data, out = new Uint8ClampedArray(a.length);
+        for (let i = 0; i < a.length; i += 4) {
+          out[i] = 128 + (a[i] - b[i]) * amp; out[i + 1] = 128 + (a[i + 1] - b[i + 1]) * amp;
+          out[i + 2] = 128 + (a[i + 2] - b[i + 2]) * amp; out[i + 3] = 255;
+        }
+        return new ImageData(out, 256, 256);
+      }
+      async function loadEmbedder() {
+        if (embedder) return embedder;
+        const wrap = $('emb-progress'), bar = $('emb-bar'), msg = $('emb-msg');
+        wrap.classList.remove('hidden'); bar.style.width = '0%'; msg.textContent = 'downloading embedder…';
+        const resp = await fetch(cfg.embedder);
+        const total = +resp.headers.get('content-length') || 47380497;
+        const reader = resp.body.getReader(); const chunks = []; let got = 0;
+        while (true) {
+          const { done, value } = await reader.read(); if (done) break;
+          chunks.push(value); got += value.length;
+          bar.style.width = Math.min(100, (got / total) * 100) + '%';
+          msg.textContent = `downloading embedder… ${(got / 1e6).toFixed(0)} / ${(total / 1e6).toFixed(0)} MB`;
+        }
+        const buf = new Uint8Array(got); let o = 0; for (const c of chunks) { buf.set(c, o); o += c.length; }
+        msg.textContent = 'initializing embedder…';
+        try { embedder = await ort.InferenceSession.create(buf, { executionProviders: ['webgpu', 'wasm'] }); }
+        catch (e) { embedder = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] }); }
+        msg.textContent = 'embedder ready · watermarking on-device';
+        setTimeout(() => wrap.classList.add('hidden'), 1500);
+        return embedder;
+      }
+      function buildGrid() {
+        const g = $('bitgrid'); g.innerHTML = '';
+        for (let i = 0; i < 256; i++) {
+          const d = document.createElement('div');
+          d.style.cssText = 'aspect-ratio:1;border-radius:1px;background:var(--color-border)';
+          g.appendChild(d);
+        }
+      }
+      function showBits(recovered, truth) {
+        const cells = $('bitgrid').children; let correct = 0;
+        for (let i = 0; i < 256; i++) {
+          const ok = truth ? recovered[i] === truth[i] : null;
+          if (ok) correct++;
+          cells[i].style.background = truth == null ? 'var(--color-muted-2)' : (ok ? 'var(--color-accent)' : '#d1495b');
+        }
+        return correct;
+      }
+      async function detect(imgData) {
+        if (!session) return;
+        const out = await session.run({ image: toTensor(imgData) });
+        const preds = out.preds.data;
+        const rec = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) rec[i] = preds[i + 1] > 0 ? 1 : 0;
+        const truth = current && current.bits ? current.bits : null;
+        const correct = showBits(rec, truth);
+        const v = $('verdict'), accVal = $('acc-val'), bar = $('acc-bar');
+        if (truth == null) {
+          accVal.textContent = '?'; bar.style.width = '0%';
+          v.textContent = 'no reference'; v.style.color = 'var(--color-muted)'; v.style.borderColor = 'var(--color-border)';
+          return;
+        }
+        const pct = correct / 256;
+        accVal.textContent = String(correct);
+        bar.style.width = (pct * 100) + '%';
+        let label, col;
+        if (pct >= 0.9) { label = '✓ watermark detected'; col = 'var(--color-accent)'; bar.style.background = 'var(--color-accent)'; }
+        else if (pct >= 0.68) { label = '~ degraded, still present'; col = '#c98a00'; bar.style.background = '#c98a00'; }
+        else { label = '✕ watermark destroyed'; col = '#d1495b'; bar.style.background = '#d1495b'; }
+        v.textContent = label + ' (' + Math.round(pct * 100) + '%)'; v.style.color = col; v.style.borderColor = col;
+      }
+
+      // ---- gallery ----
+      async function selectImage(item) {
+        current = { ...item, bits: item.bits ? Uint8Array.from(item.bits, (c) => +c) : null };
+        bases.wm = await imgToData(cfg.galleryDir + item.wm);
+        bases.orig = await imgToData(cfg.galleryDir + item.orig);
+        bases.heat = await imgToData(cfg.galleryDir + item.heat);
+        $('a-jpeg').value = 100; $('a-scale').value = 100; $('a-crop').value = 100; $('a-noise').value = 0;
+        syncLabels(); setView('attacked');
+        await applyAttacks();
+        document.querySelectorAll('#gallery .g-thumb').forEach((t) => t.classList.toggle('ring-2', t.dataset.id === item.id));
+      }
+      function setView(v) {
+        curView = v;
+        document.querySelectorAll('.view-tab').forEach((b) => b.classList.toggle('bg-accent-soft', b.dataset.view === v));
+        if (v === 'attacked' && lastAttacked) draw(lastAttacked);
+        else if (bases[v]) draw(bases[v]);
+      }
+      function syncLabels() {
+        $('v-jpeg').textContent = $('a-jpeg').value; $('v-scale').textContent = $('a-scale').value;
+        $('v-crop').textContent = $('a-crop').value; $('v-noise').textContent = $('a-noise').value;
+      }
+
+      // ---- model loading with progress ----
+      async function loadModel() {
+        $('load-btn').disabled = true; $('load-btn').style.opacity = 0.5;
+        $('load-progress').classList.remove('hidden');
+        const msg = $('load-msg'), bar = $('load-bar');
+        try {
+          msg.textContent = 'fetching ONNX Runtime…';
+          ort = await import(`https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VER}/dist/ort.mjs`);
+          ort.env.wasm.numThreads = 1;
+          ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VER}/dist/`;
+          // fetch model with progress
+          const resp = await fetch(cfg.model);
+          const total = +resp.headers.get('content-length') || 66887334;
+          const reader = resp.body.getReader(); const chunks = []; let got = 0;
+          while (true) {
+            const { done, value } = await reader.read(); if (done) break;
+            chunks.push(value); got += value.length;
+            bar.style.width = Math.min(100, (got / total) * 100) + '%';
+            msg.textContent = `downloading detector… ${(got / 1e6).toFixed(0)} / ${(total / 1e6).toFixed(0)} MB`;
+          }
+          const buf = new Uint8Array(got); let o = 0; for (const c of chunks) { buf.set(c, o); o += c.length; }
+          msg.textContent = 'initializing model…';
+          try {
+            session = await ort.InferenceSession.create(buf, { executionProviders: ['webgpu', 'wasm'] });
+          } catch (e) {
+            session = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
+          }
+          msg.textContent = 'ready · running locally on ' + (session.handler && session.handler._ep || 'device');
+          $('loader').classList.add('hidden');
+          $('demo').classList.remove('hidden');
+          buildGrid();
+          gallery = await (await fetch(cfg.gallery)).json();
+          const g = $('gallery');
+          gallery.images.forEach((item, i) => {
+            const b = document.createElement('button');
+            b.className = 'g-thumb w-[68px] h-[68px] rounded-[6px] border border-border overflow-hidden ring-accent hover:ring-2';
+            b.dataset.id = item.id;
+            b.innerHTML = `<img src="${cfg.galleryDir + item.wm}" alt="${item.id}" class="w-full h-full object-cover" />`;
+            b.addEventListener('click', () => selectImage(item));
+            g.appendChild(b);
+          });
+          await selectImage(gallery.images[0]);
+        } catch (e) {
+          msg.textContent = 'failed to load: ' + (e && e.message ? e.message : e);
+        }
+      }
+
+      // ---- wiring ----
+      $('load-btn').addEventListener('click', loadModel);
+      document.querySelectorAll('.view-tab').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+      ['a-jpeg', 'a-scale', 'a-crop', 'a-noise'].forEach((id) => {
+        $(id).addEventListener('input', syncLabels);
+        $(id).addEventListener('change', applyAttacks);
+      });
+      $('reset-btn').addEventListener('click', () => {
+        $('a-jpeg').value = 100; $('a-scale').value = 100; $('a-crop').value = 100; $('a-noise').value = 0;
+        syncLabels(); applyAttacks();
+      });
+      $('upload').addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const url = URL.createObjectURL(file);
+        try {
+          const orig = await imgToData(url);
+          await loadEmbedder();
+          const { bits, tensor } = randomMessage();
+          const out = await embedder.run({ image: toTensor(orig), message: tensor });
+          const wm = tensorToImageData(out.image_w);
+          bases.orig = orig; bases.wm = wm; bases.heat = residualHeat(wm, orig);
+          current = { id: 'upload', bits };
+          document.querySelectorAll('#gallery .g-thumb').forEach((t) => t.classList.remove('ring-2'));
+          $('a-jpeg').value = 100; $('a-scale').value = 100; $('a-crop').value = 100; $('a-noise').value = 0;
+          syncLabels(); setView('attacked'); await applyAttacks();
+        } catch (err) {
+          $('emb-progress').classList.remove('hidden');
+          $('emb-msg').textContent = 'embedding failed: ' + (err && err.message ? err.message : err);
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      });
+    })();
+  </script>
+</BaseLayout>

@@ -1,12 +1,17 @@
 {
-  "name": "useful-proxima",
+  "name": "hadyelsahar-site",
   "type": "module",
   "version": "0.0.1",
+  "description": "Personal website of Hady Elsahar (Astro + Tailwind, deployed to GitHub Pages).",
+  "author": "Hady Elsahar",
+  "license": "MIT",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "astro dev",
+    "edit": "concurrently -k -n astro,cms -c cyan,magenta \"astro dev --host\" \"decap-server\"",
+    "cms": "decap-server",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -20,5 +25,11 @@
     "astro": "^6.3.5",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "decap-server": "^3.2.2",
+    "playwright": "^1.48.0",
+    "puppeteer-core": "^23.11.1"
   }
 }
