@@ -19,7 +19,7 @@ content provenance, and the cultural side of building generative systems.
 ## How this works
 
 Posts are plain Markdown files under `src/content/posts/`. Each one has a bit of
-frontmatter at the top — title, description, date, tags — and the body is just
+frontmatter at the top, title, description, date, tags, and the body is just
 Markdown:
 
 ```markdown
@@ -38,5 +38,5 @@ Set `draft: true` to keep something out of the public list while you work on it.
 
 ## What's next
 
-More to come. If any of it sparks something — agreement, disagreement, a
-half-formed idea — [email me](mailto:hadyelsahar@gmail.com).
+More to come. If any of it sparks something, agreement, disagreement, a
+half-formed idea, [email me](mailto:hadyelsahar@gmail.com).

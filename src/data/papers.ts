@@ -38,7 +38,7 @@ export const papers: Paper[] = [
   },
   {
     id: 'paper-chunky-seal',
-    title: 'ChunkySeal: We Can Hide More Bits — The Unused Watermarking Capacity in Theory and in Practice',
+    title: 'ChunkySeal: We Can Hide More Bits, The Unused Watermarking Capacity in Theory and in Practice',
     authors: 'Content Seal team (incl. Hady Elsahar)',
     venue: 'arXiv · 2025',
     links: [

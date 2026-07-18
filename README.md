@@ -2,9 +2,9 @@
 
 Staff Research Scientist at [FAIR, Meta Superintelligence Labs](https://ai.meta.com/), on the [Content Seal](https://facebookresearch.github.io/content-seal/) team. I work at the intersection of **generative AI and safety**, currently on invisible watermarking and content provenance, helping scale AI-generated-media detection to billions of users and protecting millions of videos a day.
 
-I've worked in generative AI since 2014—back when we still derived gradients by hand and trained stacked LSTMs before autodiff made it effortless. Since then I've had a front-row seat to the field's evolution: from teaching models to copy words they had never seen before, to generating text in any language and steering what models say, to today's harder question: telling what's real in the age of deepfakes.
+I've worked in generative AI since 2014, training my first language models back when we still derived gradients by hand, before autodiff made it effortless. Since then I've had a front-row seat to the field's evolution: from teaching models to copy words they had never seen before, to generating text in any language and steering what models say, to today's harder question: telling what's real in the age of deepfakes.
 
-At Meta, beyond Content Seal, I helped build **SeamlessM4T**, a single model for speech translation across close to 100 languages, named a [TIME Best Invention of 2023](https://time.com/collection/best-inventions-2023/6326994/meta-seamlessm4t/) and [published in Nature](https://www.nature.com/articles/s41586-024-08359-z). Before Meta, at [Naver Labs Europe](https://europe.naverlabs.com/), I worked with Marc Dymetman on reinforcement learning for fine-tuning language models **without catastrophic forgetting**—foundational research into RL-based alignment. Earlier, I was at **Bloomberg**, IBM, and Microsoft, and did my Ph.D. at Université de Lyon with [Christophe Gravier](https://twitter.com/chgravier) and Frédérique Laforest on generating natural language from knowledge graphs.
+At Meta, beyond Content Seal, I helped build **SeamlessM4T**, a single model for speech translation across close to 100 languages, named a [TIME Best Invention of 2023](https://time.com/collection/best-inventions-2023/6326994/meta-seamlessm4t/) and [published in Nature](https://www.nature.com/articles/s41586-024-08359-z). Before Meta, at [Naver Labs Europe](https://europe.naverlabs.com/), I worked with Marc Dymetman on reinforcement learning for fine-tuning language models **without catastrophic forgetting**, foundational research into RL-based alignment. Earlier, I was at **Bloomberg**, IBM, and Microsoft, and did my Ph.D. at Université de Lyon with [Christophe Gravier](https://twitter.com/chgravier) and Frédérique Laforest on generating natural language from knowledge graphs.
 
 Beyond research, I was a board member of [Masakhane](https://www.masakhane.io/), whose participatory-research paper received the [Wikimedia Foundation Research Award](https://research.wikimedia.org/awards.html), and I helped organize [AfricaNLP](https://africanlp.github.io/). I care about making AI work for underrepresented languages and communities.
 
@@ -18,7 +18,7 @@ Beyond research, I was a board member of [Masakhane](https://www.masakhane.io/),
 
 ## Languages
 
-- العربية هي لغتي الأم. *(Arabic — native)*
+- العربية هي لغتي الأم. *(Arabic, native)*
 - I speak English at a near-native level.
 - Je parle français à un niveau intermédiaire avancé.
 - Ich spreche Deutsch auf mittlerem Niveau.
@@ -69,11 +69,11 @@ As voice cloning and strong image/video generators emerged, content provenance a
 
 Selected papers:
 
-- **TextSeal: A Localized LLM Watermark for Provenance & Distillation Protection** · arXiv · 2026 — [arXiv](https://arxiv.org/abs/2605.12456) · [code](https://github.com/facebookresearch/textseal)
-- **PixelSeal: Adversarial-Only Training for Invisible Image and Video Watermarking** · Meta AI · 2025 — [paper](https://ai.meta.com/research/publications/pixel-seal-adversarial-only-training-for-invisible-image-and-video-watermarking/) · [code](https://github.com/facebookresearch/videoseal)
-- **ChunkySeal: We Can Hide More Bits — The Unused Watermarking Capacity in Theory and in Practice** · arXiv · 2025 — [arXiv](https://arxiv.org/abs/2510.12812) · [code](https://github.com/facebookresearch/videoseal)
-- **VideoSeal: Open and Efficient Video Watermarking** · arXiv · Dec 2024 — [arXiv](https://arxiv.org/abs/2412.09492) · [code](https://github.com/facebookresearch/videoseal) · [demo](https://aidemos.meta.com/videoseal)
-- **AudioSeal: Proactive Detection of Voice Cloning with Localized Watermarking** · ICML 2024 — [paper](https://arxiv.org/abs/2401.17264) · [code](https://github.com/facebookresearch/audioseal) · [HF](https://huggingface.co/facebook/audioseal)
+- **TextSeal: A Localized LLM Watermark for Provenance & Distillation Protection** · arXiv · 2026 · [arXiv](https://arxiv.org/abs/2605.12456) · [code](https://github.com/facebookresearch/textseal)
+- **PixelSeal: Adversarial-Only Training for Invisible Image and Video Watermarking** · Meta AI · 2025 · [paper](https://ai.meta.com/research/publications/pixel-seal-adversarial-only-training-for-invisible-image-and-video-watermarking/) · [code](https://github.com/facebookresearch/videoseal)
+- **ChunkySeal: We Can Hide More Bits, The Unused Watermarking Capacity in Theory and in Practice** · arXiv · 2025 · [arXiv](https://arxiv.org/abs/2510.12812) · [code](https://github.com/facebookresearch/videoseal)
+- **VideoSeal: Open and Efficient Video Watermarking** · arXiv · Dec 2024 · [arXiv](https://arxiv.org/abs/2412.09492) · [code](https://github.com/facebookresearch/videoseal) · [demo](https://aidemos.meta.com/videoseal)
+- **AudioSeal: Proactive Detection of Voice Cloning with Localized Watermarking** · ICML 2024 · [paper](https://arxiv.org/abs/2401.17264) · [code](https://github.com/facebookresearch/audioseal) · [HF](https://huggingface.co/facebook/audioseal)
 
 ### 2022 – 2024 · Meta AI – FAIR
 **Seamless: Massively multilingual & multimodal translation**
@@ -82,8 +82,8 @@ I joined the Seamless effort and helped build SeamlessM4T, a single foundation m
 
 Selected papers:
 
-- **SeamlessM4T: Multilingual & Multimodal Translation** · Meta AI · 2023 — [blog](https://ai.meta.com/blog/seamless-m4t/) · [paper](https://dl.fbaipublicfiles.com/seamless/seamless_m4t_paper.pdf) · [HF](https://huggingface.co/spaces/facebook/seamless_m4t)
-- **Joint Speech and Text Machine Translation for up to 100 Languages** · Nature · 2025 — [Nature paper](https://www.nature.com/articles/s41586-024-08359-z)
+- **SeamlessM4T: Multilingual & Multimodal Translation** · Meta AI · 2023 · [blog](https://ai.meta.com/blog/seamless-m4t/) · [paper](https://dl.fbaipublicfiles.com/seamless/seamless_m4t_paper.pdf) · [HF](https://huggingface.co/spaces/facebook/seamless_m4t)
+- **Joint Speech and Text Machine Translation for up to 100 Languages** · Nature · 2025 · [Nature paper](https://www.nature.com/articles/s41586-024-08359-z)
 
 ### 2019 – 2022 · Naver Labs Europe
 **Reinforcement learning for language models, without catastrophic forgetting**
@@ -92,10 +92,10 @@ With Marc Dymetman, I studied fine-tuning language models under reinforcement le
 
 Selected papers:
 
-- **A Distributional Approach to Controlled Text Generation** · ICLR 2021 · Oral (top 2.1%) — [paper](https://openreview.net/forum?id=jWkw45-9AbL) · [code](https://github.com/naver/gdc) · [blog](https://europe.naverlabs.com/blog/debiasing-large-pretrained-language-models-using-distributional-control/)
-- **Controlling conditional language models without catastrophic forgetting** · ICML 2022 — [paper](https://proceedings.mlr.press/v162/korbak22a.html) · [slides](https://icml.cc/media/icml-2022/Slides/16288_pIsVCHL.pdf) · [code](https://github.com/naver/gdc/tree/CDPG)
-- **On Reinforcement Learning and Distribution Matching for Fine-Tuning Language Models with no Catastrophic Forgetting** · NeurIPS 2022 — [paper](https://arxiv.org/abs/2206.00761)
-- **An Approximate Sampler for Energy-Based Models with Divergence Diagnostics** · TMLR 2022 — [paper](https://dblp.org/rec/journals/tmlr/EikemaKDED22.html)
+- **A Distributional Approach to Controlled Text Generation** · ICLR 2021 · Oral (top 2.1%) · [paper](https://openreview.net/forum?id=jWkw45-9AbL) · [code](https://github.com/naver/gdc) · [blog](https://europe.naverlabs.com/blog/debiasing-large-pretrained-language-models-using-distributional-control/)
+- **Controlling conditional language models without catastrophic forgetting** · ICML 2022 · [paper](https://proceedings.mlr.press/v162/korbak22a.html) · [slides](https://icml.cc/media/icml-2022/Slides/16288_pIsVCHL.pdf) · [code](https://github.com/naver/gdc/tree/CDPG)
+- **On Reinforcement Learning and Distribution Matching for Fine-Tuning Language Models with no Catastrophic Forgetting** · NeurIPS 2022 · [paper](https://arxiv.org/abs/2206.00761)
+- **An Approximate Sampler for Energy-Based Models with Divergence Diagnostics** · TMLR 2022 · [paper](https://dblp.org/rec/journals/tmlr/EikemaKDED22.html)
 
 ### 2018 · Bloomberg, London
 **Neural abstractive summarization in production**
@@ -109,11 +109,11 @@ My thesis addressed data-to-text generation and relation extraction, in the pre-
 
 Selected papers:
 
-- **Zero-Shot Question Generation from Knowledge Graphs for Unseen Predicates and Entity Types** · NAACL 2018 — [paper](https://www.aclweb.org/anthology/N18-1020/) · [code](https://github.com/hadyelsahar/Zeroshot-QuestionGeneration)
-- **Mind the (Language) Gap: Generation of Multilingual Wikipedia Summaries from Wikidata for ArticlePlaceholders** · ESWC 2018 — [paper](https://arxiv.org/abs/1803.09447) · [code](https://github.com/pvougiou/Wikidata2Wikipedia)
-- **Neural Wikipedian: Generating Textual Summaries from Knowledge Base Triples** · Journal of Web Semantics · 2018 — [paper](https://arxiv.org/abs/1711.00155)
-- **Learning to Generate Wikipedia Summaries for Underserved Languages from Wikidata** · NAACL 2018 — [paper](https://arxiv.org/abs/1803.07116)
+- **Zero-Shot Question Generation from Knowledge Graphs for Unseen Predicates and Entity Types** · NAACL 2018 · [paper](https://www.aclweb.org/anthology/N18-1020/) · [code](https://github.com/hadyelsahar/Zeroshot-QuestionGeneration)
+- **Mind the (Language) Gap: Generation of Multilingual Wikipedia Summaries from Wikidata for ArticlePlaceholders** · ESWC 2018 · [paper](https://arxiv.org/abs/1803.09447) · [code](https://github.com/pvougiou/Wikidata2Wikipedia)
+- **Neural Wikipedian: Generating Textual Summaries from Knowledge Base Triples** · Journal of Web Semantics · 2018 · [paper](https://arxiv.org/abs/1711.00155)
+- **Learning to Generate Wikipedia Summaries for Underserved Languages from Wikidata** · NAACL 2018 · [paper](https://arxiv.org/abs/1803.07116)
 
 ---
 
-<sub>This is the source for [hadyelsahar.github.io](https://hadyelsahar.github.io) — a static site built with Astro. See the commit history for development notes.</sub>
+<sub>This is the source for [hadyelsahar.github.io](https://hadyelsahar.github.io), a static site built with Astro. See the commit history for development notes.</sub>

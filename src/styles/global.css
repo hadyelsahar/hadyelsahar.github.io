@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 /* ----------------------------------------------------------------------------
- * Hady Elsahar — classic academic homepage.
+ * Hady Elsahar - classic academic homepage.
  * Restrained: white paper, dark ink, one quiet accent, generous type.
  * --------------------------------------------------------------------------*/
 @theme {
   --font-sans: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  /* Editorial display serif — Fraunces (variable, optical sizing) */
+  /* Editorial display serif - Fraunces (variable, optical sizing) */
   --font-serif: "Fraunces", Georgia, "Times New Roman", Cambria, "Noto Serif", serif;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
 
@@ -30,7 +30,7 @@
 }
 
 /* ---------------------------------------------------------------- Dark mode
- * Token override only — every component uses semantic tokens, so the whole
+ * Token override only - every component uses semantic tokens, so the whole
  * site themes from here. Toggle sets `.dark` on <html>. */
 html.dark {
   --color-accent: #6db2e6;

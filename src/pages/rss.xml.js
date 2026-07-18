@@ -7,7 +7,7 @@ export async function GET(context) {
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
   return rss({
-    title: 'Hady Elsahar — Writing',
+    title: 'Hady Elsahar - Writing',
     description:
       'Essays and notes on multilingual NLP, speech generation, and the cultural side of AI research.',
     site: context.site,
