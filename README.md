@@ -1,95 +1,86 @@
-# hadyelsahar.com (Astro)
+# hadyelsahar.github.io
 
-Personal site, scaffolded with Astro 6 + Tailwind v4 + MDX. Static-built and deployed to GitHub Pages.
+Personal website of **Hady Elsahar** — Staff Research Scientist at FAIR, Meta Superintelligence Labs.
 
-## Scaffolding path used
+Live at **https://hadyelsahar.github.io**
 
-Took the **`npm create astro@latest` happy path** (`--template minimal --typescript strict --no-install --skip-houston --yes`).
-Because the working directory was not empty, the tool generated the project into a
-sibling folder (`useful-proxima/`) which was then moved into the repo root and removed.
-Tailwind and MDX were added via the official integrations (`npx astro add ...`).
+Built with [Astro](https://astro.build) + [Tailwind CSS v4](https://tailwindcss.com) + MDX, statically generated and deployed to GitHub Pages via GitHub Actions.
 
-Node 22.12.0 was installed locally to `~/.local/node` (Homebrew install hit a
-sqlite-tap conflict; the official Node tarball was the simplest unblocker). Add
-`~/.local/node/bin` to your PATH or use a normal `brew install node` once the
-sqlite conflict is resolved.
+## Highlights
 
-## Dev
+- **Homepage** — bio, a selected-projects carousel, and a "research journey" timeline (reversible, newest-first by default) with figures and selected papers per era.
+- **In-browser ML demos** — [`/demos/videoseal`](https://hadyelsahar.github.io/demos/videoseal) and [`/demos/audioseal`](https://hadyelsahar.github.io/demos/audioseal) run watermark detection/embedding entirely client-side via ONNX Runtime Web (no server, no upload).
+- **Animated avatar** — hover the profile photo for 1s to see the "coding" GIF; leave the page idle (no scroll) for 10s and it falls asleep.
+- **Dark mode**, RSS, sitemap, JSON-LD, and OpenGraph metadata.
+- **Privacy-friendly analytics** — GoatCounter, loaded only on the production host.
+
+## Requirements
+
+- Node **22+** (see `engines` in `package.json`).
+
+## Develop
 
 ```bash
-export PATH="$HOME/.local/node/bin:$PATH"  # or however you have node 22+
 npm install
-npm run dev            # site only, at http://localhost:4321
-npm run edit           # site + visual editor (see "Editing in the browser")
+npm run dev            # site at http://localhost:4321
+npm run edit           # site + Decap CMS visual editor (see below)
 ```
-
-## Editing in the browser (visual editor)
-
-Run `npm run edit`. This starts two things together:
-
-- **Astro dev server** at `http://localhost:4321`
-- **Decap CMS proxy** (`decap-server`) at port `8081`, which lets the editor
-  read and write the real Markdown files on disk.
-
-Then open the editor at:
-
-```
-http://localhost:4321/admin/
-```
-
-You'll see a "Blog Posts" collection. Click a post to edit it, or "New Post" to
-create one — title, description, date, tags, draft toggle, and a rich Markdown
-body. Saving writes straight to `src/content/posts/` (no login, no deploy). The
-Astro dev server hot-reloads, so the change shows up on the site immediately.
-
-> Note: the config uses `local_backend: true`, so editing only touches local
-> files. Publishing still happens the normal way — commit and push to `main`.
-> If you're on a remote/SSH dev box, forward **both** ports `4321` and `8081`.
 
 ## Build
 
 ```bash
-npm run build       # outputs to ./dist
-npm run preview     # serves the built site locally
-npx astro check     # type-checks Astro + TS
+npm run build          # static output to ./dist
+npm run preview        # serve the built site locally
+npx astro check        # type-check Astro + TS
 ```
 
-## Writing a new post
+## Editing content
 
-**Option A — visual editor (easiest):** run `npm run edit` and open
-`http://localhost:4321/admin/`. Create/edit posts with a form + rich
-Markdown editor; saves write to `src/content/posts/` automatically.
+### Papers & projects
 
-**Option B — by hand:**
+The research papers and project cards are plain data files — edit them directly:
 
-1. Create `src/content/posts/<slug>.md` (or `.mdx` if you want components).
-2. Frontmatter:
-   ```yaml
-   ---
-   title: "Your title"
-   description: "One-sentence deck"
-   pubDate: 2026-05-21
-   tags: ["multilingual", "opinion"]
-   draft: false
-   ---
-   ```
-3. Write markdown below. Push to `main` → GitHub Actions deploys.
-4. Set `draft: true` to hide from the list while writing.
+- `src/data/papers.ts` — publication list (title, authors, venue, links); grouped into eras by `eraPapers` in `src/pages/index.astro`.
+- `src/data/projects.ts` — project cards (blurb, images, press/links, clickable cover targets).
 
-The list page lives at `/posts/`, each post at `/posts/<slug>/`, and the
-RSS feed at `/rss.xml`. Schema is enforced by `src/content/config.ts` —
-build will fail loudly if frontmatter is malformed.
+### Blog posts
+
+Posts are Markdown/MDX files in `src/content/posts/`, validated against the schema in `src/content.config.ts` (build fails loudly on bad frontmatter).
+
+**Option A — visual editor:** run `npm run edit`, open `http://localhost:4321/admin/`, and edit with a form + Markdown editor. Uses Decap CMS with `local_backend: true`, so it writes straight to `src/content/posts/` on disk (no login, no deploy). On a remote/SSH dev box, forward ports **4321** and **8081**.
+
+**Option B — by hand:** create `src/content/posts/<slug>.md` with frontmatter:
+
+```yaml
+---
+title: "Your title"
+description: "One-sentence deck"
+pubDate: 2026-05-21
+tags: ["multilingual", "opinion"]
+draft: false        # true = hide from public list
+---
+```
+
+The list page is `/posts/`, each post is `/posts/<slug>/`, and the feed is `/rss.xml`.
+
+> **Note:** the **Writing** (`/posts`) and **Talks** (`/talks`) pages are currently
+> disabled in the nav (commented out in `src/components/Nav.astro`), and the homepage
+> "Recent writing" section is commented out in `src/pages/index.astro`. Re-enable those
+> when the content is ready.
+
+## Analytics
+
+[GoatCounter](https://www.goatcounter.com/) is wired up in `src/layouts/BaseLayout.astro`.
+The tracking script is injected **only** on the production host (`hadyelsahar.github.io`),
+so localhost and previews are never counted. Append `?gctest` to any URL to force a test
+pageview from any host. Dashboard: `https://hadyelsahar.goatcounter.com`.
 
 ## Deployment
 
-Push to `main`. The workflow in `.github/workflows/deploy.yml` uses the official
-`withastro/action@v3` + `actions/deploy-pages@v4` to build and publish to GitHub
-Pages.
+Push to `main`. The workflow in `.github/workflows/deploy.yml` uses
+`withastro/action@v3` + `actions/deploy-pages@v4` to build and publish to GitHub Pages.
 
-**One-time setup:** in repo settings → Pages → Source, pick **GitHub Actions**.
-
-Also: before the first deploy, update `site:` in `astro.config.mjs` to the
-production URL (the placeholder is `https://hadyelsahar.github.io`).
+**One-time setup:** repo **Settings → Pages → Source → GitHub Actions**.
 
 ## Repo layout
 
@@ -97,18 +88,17 @@ production URL (the placeholder is `https://hadyelsahar.github.io`).
 .
 ├── public/                     # served verbatim at /
 │   ├── admin/                  # Decap CMS config (config.yml)
-│   ├── assets/                 # images, figures, demo galleries + ONNX models
+│   ├── assets/                 # images, figures, demo galleries + ONNX models + avatar GIFs
 │   ├── robots.txt
-│   ├── favicon.ico
-│   └── favicon.svg
+│   └── favicon.*
 ├── src/
-│   ├── components/             # Nav, Footer, Eyebrow, LinkChip, PaperCard
-│   ├── content/                # blog collections (posts/)
+│   ├── components/             # Nav, Footer, Eyebrow, LinkChip, PaperCard, ShipOfTheseus (disabled)
+│   ├── content/                # blog posts (posts/)
 │   ├── content.config.ts       # posts schema (zod)
 │   ├── data/                   # papers.ts, projects.ts
 │   ├── layouts/                # BaseLayout.astro
 │   ├── lib/                    # url.ts (withBase helper)
-│   ├── pages/                  # index.astro + routes (talks, posts, demos, admin, rss)
+│   ├── pages/                  # index.astro + routes (posts, talks, demos, admin, rss)
 │   └── styles/                 # global.css (Tailwind v4 entry)
 ├── .github/workflows/deploy.yml
 ├── astro.config.mjs
