@@ -248,6 +248,15 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
                 ))}
               </div>
             )}
+            {p.id === 'content-seal' && (
+              <a href="#watermark-demo" class="mt-auto pt-4 block group/try" aria-label="Try the watermarking demo in your browser">
+                <span class="flex items-center gap-2 rounded-[8px] border border-dashed border-accent/50 bg-accent-soft/40 px-3 py-2.5 text-[12.5px] text-accent group-hover/try:bg-accent-soft transition-colors">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-bg text-[11px]">▶</span>
+                  <span class="font-medium">Try invisible watermarking in your browser</span>
+                  <span aria-hidden="true" class="ml-auto transition-transform group-hover/try:translate-y-0.5">↓</span>
+                </span>
+              </a>
+            )}
           </div>
         </article>
       ))}
