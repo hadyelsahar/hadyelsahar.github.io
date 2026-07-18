@@ -187,9 +187,13 @@ and I helped organize <a href="https://africanlp.github.io/" target="_blank" rel
   <section id="projects" class="reveal mx-auto max-w-[900px] px-6 py-12 border-t border-border">
     <div class="flex items-end justify-between gap-6 mb-6 pb-2 border-b border-border">
       <h2 class="font-display text-[15px] font-semibold tracking-tight text-ink">Selected projects</h2>
-      <div class="flex items-center gap-2">
-        <button data-proj-scroll="-1" aria-label="Previous project" class="h-8 w-8 rounded-full border border-border text-muted hover:text-ink hover:border-ink transition-colors leading-none">←</button>
-        <button data-proj-scroll="1" aria-label="Next project" class="h-8 w-8 rounded-full border border-border text-muted hover:text-ink hover:border-ink transition-colors leading-none">→</button>
+      <div class="flex items-center rounded-full border border-border overflow-hidden divide-x divide-border">
+        <button data-proj-scroll="-1" aria-label="Previous project" class="group/nav grid h-8 w-10 place-items-center text-muted hover:bg-ink hover:text-bg transition-colors">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 transition-transform duration-200 group-hover/nav:-translate-x-0.5" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <button data-proj-scroll="1" aria-label="Next project" class="group/nav grid h-8 w-10 place-items-center text-muted hover:bg-ink hover:text-bg transition-colors">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 transition-transform duration-200 group-hover/nav:translate-x-0.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
       </div>
     </div>
 
