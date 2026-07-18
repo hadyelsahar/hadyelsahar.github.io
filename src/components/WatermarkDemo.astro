@@ -1,91 +1,131 @@
 ---
-// Expanding in-card watermarking demo for the Content Seal project card.
-// A vertical bar on the card's right edge; clicking expands a panel (pushing the
-// neighboring cards) that lazily iframes the existing /demos pages in chrome-free
-// "embed" mode — image (VideoSeal, generate + detect) and audio (AudioSeal).
+// Minimal, in-page invisible-watermarking demo (no iframe, no overlay).
+// Image watermarking with Meta VideoSeal 1.0, running 100% in the browser via
+// ONNX Runtime Web. Inference logic reused from the standalone VideoSeal demo.
 import { withBase } from '../lib/url.ts';
 
-const embed = {
-  image: withBase('/demos/videoseal') + '?embed',
-  audio: withBase('/demos/audioseal') + '?embed',
-};
-const full = {
-  image: withBase('/demos/videoseal'),
-  audio: withBase('/demos/audioseal'),
+const cfg = {
+  embedder: withBase('/assets/demos/videoseal/embedder.fp16.onnx'),
+  detector: withBase('/assets/demos/videoseal/detector.fp16.onnx'),
+  gallery: withBase('/assets/demos/videoseal/gallery/gallery.json'),
+  galleryDir: withBase('/assets/demos/videoseal/gallery/'),
 };
 ---
 
-<div class="wm-demo flex shrink-0 self-stretch" data-wm-demo>
-  <!-- vertical toggle bar -->
-  <button
-    type="button"
-    data-wm-toggle
-    aria-expanded="false"
-    aria-label="Try the watermarking demo in your browser"
-    class="group/bar relative w-10 shrink-0 border-l border-border bg-bg-subtle hover:bg-accent-soft transition-colors flex items-center justify-center cursor-pointer"
-  >
-    <span class="[writing-mode:vertical-rl] rotate-180 font-mono text-[10.5px] uppercase tracking-[0.2em] text-muted group-hover/bar:text-accent transition-colors whitespace-nowrap select-none">
-      Try the watermarking demo
-    </span>
-    <span aria-hidden="true" class="absolute bottom-3 left-1/2 -translate-x-1/2 text-muted group-hover/bar:text-accent transition-transform duration-300 group-aria-expanded/bar:rotate-180">→</span>
-  </button>
+<section id="watermark-demo" class="reveal mx-auto max-w-[720px] px-6 py-14 scroll-mt-20">
+  <div class="text-center">
+    <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">Runs 100% in your browser</p>
+    <h2 class="mt-2 font-display text-[26px] md:text-[30px] font-semibold tracking-[-0.01em] text-ink">Try invisible watermarking</h2>
+    <p class="mt-2 text-[13.5px] leading-[1.55] text-muted mx-auto max-w-[52ch]">
+      Watermark an image with <span class="font-medium text-ink-soft">VideoSeal 1.0</span>, then attack it and
+      watch the hidden 256-bit message survive. Nothing is uploaded, the model runs on your device.
+    </p>
+  </div>
 
-  <!-- expanding panel -->
-  <div data-wm-panel class="w-0 overflow-hidden transition-[width] duration-300 ease-out bg-card">
-    <div class="w-[480px] h-full flex flex-col">
-      <div class="flex items-center gap-1.5 border-b border-border px-3 py-2 shrink-0">
-        <button data-wm-tab="image" class="wm-tab px-2.5 py-1 rounded-md border border-border font-mono text-[11px] text-ink-soft hover:border-accent transition-colors">Image</button>
-        <button data-wm-tab="audio" class="wm-tab px-2.5 py-1 rounded-md border border-border font-mono text-[11px] text-ink-soft hover:border-accent transition-colors">Audio</button>
-        <span class="ml-auto font-mono text-[9.5px] uppercase tracking-[0.15em] text-muted-2">runs in your browser</span>
-        <button data-wm-close aria-label="Close demo" class="ml-1 grid h-6 w-6 place-items-center rounded-md text-muted hover:text-ink hover:bg-bg-subtle transition-colors">✕</button>
+  <div class="mt-8 rounded-[14px] border border-border bg-card overflow-hidden">
+    <!-- header -->
+    <div class="flex items-center gap-1.5 border-b border-border px-4 py-2.5">
+      <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Watermark it</span>
+      <span class="ml-auto font-mono text-[10px] text-muted-2">VideoSeal 1.0 · 256-bit</span>
+    </div>
+
+    <!-- load gate -->
+    <div id="wd-loader" class="p-8 text-center">
+      <button id="wd-load" class="inline-flex items-center gap-2 rounded-md border border-accent bg-accent-soft px-4 py-2 font-mono text-[12.5px] text-accent hover:bg-accent hover:text-bg transition-colors">
+        ▶ Load model (67 MB, cached after first load)
+      </button>
+      <div id="wd-load-progress" class="mt-4 hidden mx-auto max-w-[360px]">
+        <div class="h-1.5 w-full overflow-hidden rounded-full bg-border"><div id="wd-load-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div></div>
+        <p id="wd-load-msg" class="mt-2 font-mono text-[11px] text-muted"></p>
       </div>
-      <div class="relative flex-1 min-h-0 bg-bg">
-        <iframe data-wm-frame class="absolute inset-0 h-full w-full border-0" title="Watermarking demo" loading="lazy" allow="clipboard-write"></iframe>
-      </div>
-      <div class="border-t border-border px-3 py-2 text-center shrink-0">
-        <a data-wm-full href={full.image} target="_blank" rel="noopener" class="link font-mono text-[11px]">Open the full demo ↗</a>
+    </div>
+
+    <!-- demo -->
+    <div id="wd-demo" class="hidden p-4 sm:p-5">
+      <div id="wd-gallery" class="flex flex-wrap gap-2 justify-center"></div>
+
+      <div class="mt-5 grid grid-cols-1 sm:grid-cols-[256px_1fr] gap-5 items-start">
+        <div class="mx-auto">
+          <div class="relative w-[256px] h-[256px] rounded-[8px] border border-border overflow-hidden bg-figure">
+            <canvas id="wd-view" width="256" height="256" class="w-full h-full [image-rendering:auto]"></canvas>
+          </div>
+          <div class="mt-2 flex justify-center gap-1 font-mono text-[10.5px]">
+            <button data-wd-view="attacked" class="wd-vt px-2 py-1 rounded border border-border">Attacked</button>
+            <button data-wd-view="wm" class="wd-vt px-2 py-1 rounded border border-border">Marked</button>
+            <button data-wd-view="orig" class="wd-vt px-2 py-1 rounded border border-border">Original</button>
+            <button data-wd-view="heat" class="wd-vt px-2 py-1 rounded border border-border">Heatmap</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block">
+            <span class="font-mono text-[11px] text-ink-soft">JPEG quality <b id="wd-vq" class="text-accent">100</b></span>
+            <input id="wd-jpeg" type="range" min="5" max="100" value="100" class="w-full accent-[var(--color-accent)]" />
+          </label>
+          <div class="mt-3 flex gap-2">
+            <button id="wd-reset" class="rounded-md border border-border px-3 py-1.5 font-mono text-[11px] text-ink-soft hover:border-ink transition-colors">↺ Reset</button>
+            <label class="rounded-md border border-border px-3 py-1.5 font-mono text-[11px] text-ink-soft hover:border-ink transition-colors cursor-pointer">↥ Your own image<input id="wd-upload" type="file" accept="image/*" class="hidden" /></label>
+          </div>
+          <div id="wd-emb-progress" class="mt-2 hidden">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-border"><div id="wd-emb-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div></div>
+            <p id="wd-emb-msg" class="mt-1 font-mono text-[10.5px] text-muted"></p>
+          </div>
+
+          <div class="mt-4 rounded-[10px] border border-border bg-bg-subtle p-4">
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Bits recovered</p>
+                <p class="mt-1"><span id="wd-acc" class="font-display text-[30px] font-semibold text-ink leading-none">--</span><span class="text-[14px] text-muted"> / 256</span></p>
+              </div>
+              <p id="wd-verdict" class="font-mono text-[11px] px-2.5 py-1 rounded-full border border-border text-muted">idle</p>
+            </div>
+            <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-border"><div id="wd-accbar" class="h-full w-0 transition-[width] duration-300" style="background:var(--color-accent)"></div></div>
+            <div id="wd-bitgrid" class="mt-3 grid gap-[2px]" style="grid-template-columns:repeat(32,1fr)"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<script is:inline define:vars={{ embed, full }}>
+<script type="application/json" id="wd-cfg" set:html={JSON.stringify(cfg)}></script>
+<script is:inline>
   (function () {
-    var root = document.querySelector('[data-wm-demo]');
-    if (!root) return;
-    var toggle = root.querySelector('[data-wm-toggle]');
-    var panel = root.querySelector('[data-wm-panel]');
-    var frame = root.querySelector('[data-wm-frame]');
-    var fullLink = root.querySelector('[data-wm-full]');
-    var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-wm-tab]'));
-    var closeBtn = root.querySelector('[data-wm-close]');
-    var open = false, tab = 'image', loaded = false;
+    var cfg = JSON.parse(document.getElementById('wd-cfg').textContent);
+    var ORT = '1.20.1';
+    var ort = null, session = null, embedder = null, gallery = null, current = null;
+    var bases = {}, curView = 'attacked', lastAttacked = null;
+    var $ = function (id) { return document.getElementById(id); };
+    var work = document.createElement('canvas'); work.width = work.height = 256;
+    var wctx = work.getContext('2d', { willReadFrequently: true });
+    function draw(d) { $('wd-view').getContext('2d').putImageData(d, 0, 0); }
+    async function imgToData(url) { var im = new Image(); im.crossOrigin = 'anonymous'; im.src = url; await im.decode(); wctx.clearRect(0,0,256,256); wctx.drawImage(im,0,0,256,256); return wctx.getImageData(0,0,256,256); }
 
-    function setTab(t) {
-      tab = t;
-      tabs.forEach(function (b) {
-        var on = b.getAttribute('data-wm-tab') === t;
-        b.classList.toggle('bg-accent-soft', on);
-        b.classList.toggle('border-accent', on);
-        b.classList.toggle('text-accent', on);
-      });
-      frame.src = embed[t];
-      fullLink.href = full[t];
-    }
-    function openPanel() {
-      open = true;
-      panel.style.width = '480px';
-      toggle.setAttribute('aria-expanded', 'true');
-      if (!loaded) { loaded = true; setTab(tab); }
-      setTimeout(function () { root.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }, 140);
-    }
-    function closePanel() {
-      open = false;
-      panel.style.width = '0px';
-      toggle.setAttribute('aria-expanded', 'false');
-    }
-    toggle.addEventListener('click', function () { open ? closePanel() : openPanel(); });
-    closeBtn.addEventListener('click', closePanel);
-    tabs.forEach(function (b) { b.addEventListener('click', function () { if (!open) openPanel(); setTab(b.getAttribute('data-wm-tab')); }); });
+    async function jpeg(src, q) { var t = document.createElement('canvas'); t.width=t.height=256; t.getContext('2d').putImageData(src,0,0); var b = await new Promise(function(r){t.toBlob(r,'image/jpeg',q/100)}); var bmp = await createImageBitmap(b); var c = document.createElement('canvas'); c.width=c.height=256; var cx=c.getContext('2d'); cx.drawImage(bmp,0,0,256,256); return cx.getImageData(0,0,256,256); }
+
+    function toTensor(d){ var data=d.data,n=256*256,f=new Float32Array(3*n); for(var i=0;i<n;i++){f[i]=data[i*4]/255;f[n+i]=data[i*4+1]/255;f[2*n+i]=data[i*4+2]/255;} return new ort.Tensor('float32',f,[1,3,256,256]); }
+    function randomMessage(){ var bits=new Uint8Array(256),big=new BigInt64Array(256),rnd=new Uint8Array(256); crypto.getRandomValues(rnd); for(var i=0;i<256;i++){bits[i]=rnd[i]&1;big[i]=BigInt(bits[i]);} return {bits:bits,tensor:new ort.Tensor('int64',big,[1,256])}; }
+    function tensorToImageData(t){ var d=t.data,n=256*256,out=new Uint8ClampedArray(4*n); for(var i=0;i<n;i++){out[i*4]=d[i]*255;out[i*4+1]=d[n+i]*255;out[i*4+2]=d[2*n+i]*255;out[i*4+3]=255;} return new ImageData(out,256,256); }
+    function residualHeat(wm,orig,amp){ amp=amp||18; var a=wm.data,b=orig.data,out=new Uint8ClampedArray(a.length); for(var i=0;i<a.length;i+=4){out[i]=128+(a[i]-b[i])*amp;out[i+1]=128+(a[i+1]-b[i+1])*amp;out[i+2]=128+(a[i+2]-b[i+2])*amp;out[i+3]=255;} return new ImageData(out,256,256); }
+
+    async function loadEmbedder(){ if(embedder) return embedder; var w=$('wd-emb-progress'),bar=$('wd-emb-bar'),msg=$('wd-emb-msg'); w.classList.remove('hidden'); bar.style.width='0%'; msg.textContent='downloading embedder…'; var resp=await fetch(cfg.embedder); var total=+resp.headers.get('content-length')||47380497; var reader=resp.body.getReader(),chunks=[],got=0; while(true){var r=await reader.read(); if(r.done) break; chunks.push(r.value); got+=r.value.length; bar.style.width=Math.min(100,got/total*100)+'%'; msg.textContent='downloading embedder… '+(got/1e6|0)+' / '+(total/1e6|0)+' MB';} var buf=new Uint8Array(got),o=0; for(var c of chunks){buf.set(c,o);o+=c.length;} msg.textContent='initializing embedder…'; try{embedder=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){embedder=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} msg.textContent='embedder ready'; setTimeout(function(){w.classList.add('hidden')},1500); return embedder; }
+
+    function buildGrid(){ var g=$('wd-bitgrid'); g.innerHTML=''; for(var i=0;i<256;i++){var d=document.createElement('div'); d.style.cssText='aspect-ratio:1;border-radius:1px;background:var(--color-border)'; g.appendChild(d);} }
+    function showBits(rec,truth){ var cells=$('wd-bitgrid').children,correct=0; for(var i=0;i<256;i++){var ok=truth?rec[i]===truth[i]:null; if(ok)correct++; cells[i].style.background=truth==null?'var(--color-muted-2)':(ok?'var(--color-accent)':'#d1495b');} return correct; }
+    async function detect(d){ if(!session) return; var out=await session.run({image:toTensor(d)}); var preds=out.preds.data; var rec=new Uint8Array(256); for(var i=0;i<256;i++)rec[i]=preds[i+1]>0?1:0; var truth=current&&current.bits?current.bits:null; var correct=showBits(rec,truth); var v=$('wd-verdict'),acc=$('wd-acc'),bar=$('wd-accbar'); if(truth==null){acc.textContent='?';bar.style.width='0%';v.textContent='no reference';return;} var pct=correct/256; acc.textContent=String(correct); bar.style.width=(pct*100)+'%'; var label,col; if(pct>=0.9){label='✓ detected';col='var(--color-accent)';}else if(pct>=0.68){label='~ degraded';col='#c98a00';}else{label='✕ destroyed';col='#d1495b';} bar.style.background=col; v.textContent=label+' ('+Math.round(pct*100)+'%)'; v.style.color=col; v.style.borderColor=col; }
+
+    async function applyAttacks(){ if(!bases.wm) return; var img=bases.wm; var q=+$('wd-jpeg').value; if(q<100) img=await jpeg(img,q); lastAttacked=img; if(curView==='attacked')draw(img); await detect(img); }
+    function setView(v){ curView=v; document.querySelectorAll('.wd-vt').forEach(function(b){b.classList.toggle('bg-accent-soft',b.dataset.wdView===v);}); if(v==='attacked'&&lastAttacked)draw(lastAttacked); else if(bases[v])draw(bases[v]); }
+
+    async function selectImage(item){ current={id:item.id,bits:item.bits?Uint8Array.from(item.bits,function(c){return +c}):null}; bases.wm=await imgToData(cfg.galleryDir+item.wm); bases.orig=await imgToData(cfg.galleryDir+item.orig); bases.heat=await imgToData(cfg.galleryDir+item.heat); $('wd-jpeg').value=100; $('wd-vq').textContent='100'; setView('attacked'); await applyAttacks(); document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.toggle('ring-2',t.dataset.id===item.id);}); }
+
+    async function loadModel(){ $('wd-load').disabled=true; $('wd-load').style.opacity=.5; $('wd-load-progress').classList.remove('hidden'); var msg=$('wd-load-msg'),bar=$('wd-load-bar'); try{ msg.textContent='fetching ONNX Runtime…'; ort=await import('https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/ort.mjs'); ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/'; var resp=await fetch(cfg.detector); var total=+resp.headers.get('content-length')||66887334; var reader=resp.body.getReader(),chunks=[],got=0; while(true){var r=await reader.read(); if(r.done)break; chunks.push(r.value); got+=r.value.length; bar.style.width=Math.min(100,got/total*100)+'%'; msg.textContent='downloading detector… '+(got/1e6|0)+' / '+(total/1e6|0)+' MB';} var buf=new Uint8Array(got),o=0; for(var c of chunks){buf.set(c,o);o+=c.length;} msg.textContent='initializing…'; try{session=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){session=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} $('wd-loader').classList.add('hidden'); $('wd-demo').classList.remove('hidden'); buildGrid(); gallery=await (await fetch(cfg.gallery)).json(); var g=$('wd-gallery'); gallery.images.forEach(function(item){ var b=document.createElement('button'); b.className='wd-th w-[60px] h-[60px] rounded-[6px] border border-border overflow-hidden ring-accent hover:ring-2'; b.dataset.id=item.id; b.innerHTML='<img src="'+cfg.galleryDir+item.wm+'" alt="'+item.id+'" class="w-full h-full object-cover" />'; b.addEventListener('click',function(){selectImage(item)}); g.appendChild(b); }); await selectImage(gallery.images[0]); }catch(e){ msg.textContent='failed: '+(e&&e.message?e.message:e); } }
+
+    $('wd-load').addEventListener('click', loadModel);
+    document.querySelectorAll('.wd-vt').forEach(function(b){b.addEventListener('click',function(){setView(b.dataset.wdView)});});
+    $('wd-jpeg').addEventListener('input',function(){$('wd-vq').textContent=$('wd-jpeg').value;});
+    $('wd-jpeg').addEventListener('change',applyAttacks);
+    $('wd-reset').addEventListener('click',function(){$('wd-jpeg').value=100;$('wd-vq').textContent='100';applyAttacks();});
+    $('wd-upload').addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f) return; var url=URL.createObjectURL(f); try{ var orig=await imgToData(url); await loadEmbedder(); var m=randomMessage(); var out=await embedder.run({image:toTensor(orig),message:m.tensor}); var wm=tensorToImageData(out.image_w); bases.orig=orig; bases.wm=wm; bases.heat=residualHeat(wm,orig); current={id:'upload',bits:m.bits}; document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.remove('ring-2');}); $('wd-jpeg').value=100;$('wd-vq').textContent='100'; setView('attacked'); await applyAttacks(); }catch(err){ $('wd-emb-progress').classList.remove('hidden'); $('wd-emb-msg').textContent='embedding failed: '+(err&&err.message?err.message:err); } finally{ URL.revokeObjectURL(url); } });
   })();
 </script>
