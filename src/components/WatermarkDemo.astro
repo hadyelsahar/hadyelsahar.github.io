@@ -100,7 +100,7 @@ const cfg = {
     var cfg = JSON.parse(document.getElementById('wd-cfg').textContent);
     var ORT = '1.20.1';
     var ort = null, session = null, embedder = null, gallery = null, current = null;
-    var bases = {}, lastAttacked = null;
+    var bases = {}, lastAttacked = null, lastHeat = null;
     var $ = function (id) { return document.getElementById(id); };
     var work = document.createElement('canvas'); work.width = work.height = 256;
     var wctx = work.getContext('2d', { willReadFrequently: true });
@@ -120,10 +120,10 @@ const cfg = {
 
     async function detect(){ if(!session||!lastAttacked) return; var v=$('wd-verdict'); v.textContent='reading…'; var out=await session.run({image:toTensor(lastAttacked)}); var preds=out.preds.data; var rec=new Uint8Array(256); for(var i=0;i<256;i++)rec[i]=preds[i+1]>0?1:0; var truth=current&&current.bits?current.bits:null; var correct=0,html=''; for(var i=0;i<256;i++){ var ok=truth?rec[i]===truth[i]:true; if(ok)correct++; var col=truth==null?'#94a3b8':(ok?'#34d399':'#f87171'); html+='<span style="color:'+col+'">'+rec[i]+'</span>'; } $('wd-bitstring').innerHTML=html; var acc=$('wd-acc'),bar=$('wd-accbar'); acc.textContent=truth?String(correct):'?'; var pct=truth?correct/256:1; bar.style.width=(pct*100)+'%'; var label,c2; if(pct>=0.9){label='✓ detected';c2='var(--color-accent)';}else if(pct>=0.68){label='~ degraded';c2='#c98a00';}else{label='✗ destroyed';c2='#d1495b';} bar.style.background=c2; v.textContent=label+' ('+Math.round(pct*100)+'%)'; v.style.color=c2; v.style.borderColor=c2; }
 
-    function drawScene(){ if(lastAttacked) $('wd-view').getContext('2d').putImageData(lastAttacked,0,0); if(bases.heat) $('wd-heat').getContext('2d').putImageData(bases.heat,0,0); }
+    function drawScene(){ if(lastAttacked) $('wd-view').getContext('2d').putImageData(lastAttacked,0,0); var h=lastHeat||bases.heat; if(h) $('wd-heat').getContext('2d').putImageData(h,0,0); }
     function setSplit(pct){ pct=Math.max(0,Math.min(100,pct)); $('wd-heat').style.clipPath='inset(0 0 0 '+pct+'%)'; $('wd-divider').style.left=pct+'%'; }
     function resetResult(){ $('wd-acc').textContent='--'; $('wd-accbar').style.width='0%'; var v=$('wd-verdict'); v.textContent='idle'; v.style.color=''; v.style.borderColor=''; $('wd-bitstring').textContent='press “Detect the watermark” to read the hidden bits'; }
-    async function applyAttacks(){ if(!bases.wm) return; var img=bases.wm; var cp=+$('wd-crop').value; if(cp<100) img=cropImg(img,cp); var rt=+$('wd-rot').value; if(rt) img=rotateImg(img,rt); var q=+$('wd-jpeg').value; if(q<100) img=await jpeg(img,q); lastAttacked=img; drawScene(); resetResult(); }
+    async function applyAttacks(){ if(!bases.wm) return; var cp=+$('wd-crop').value, rt=+$('wd-rot').value, q=+$('wd-jpeg').value; var img=bases.wm; if(cp<100) img=cropImg(img,cp); if(rt) img=rotateImg(img,rt); if(q<100) img=await jpeg(img,q); lastAttacked=img; var h=bases.heat; if(h){ if(cp<100) h=cropImg(h,cp); if(rt) h=rotateImg(h,rt); } lastHeat=h; drawScene(); resetResult(); }
 
     async function selectImage(item){ current={id:item.id,bits:item.bits?Uint8Array.from(item.bits,function(c){return +c}):null}; bases.wm=await imgToData(cfg.galleryDir+item.wm); bases.orig=await imgToData(cfg.galleryDir+item.orig); bases.heat=await imgToData(cfg.galleryDir+item.heat); $('wd-jpeg').value=100; $('wd-vq').textContent='100'; $('wd-crop').value=100; $('wd-vc').textContent='100'; $('wd-rot').value=0; $('wd-vr').textContent='0'; setSplit(50); await applyAttacks(); document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.toggle('ring-2',t.dataset.id===item.id);}); }
 
