@@ -212,7 +212,7 @@ const cfg = {
     var camStream=null;
     async function openCamera(){ try{ camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}); var v=$('wd-cam-video'); v.srcObject=camStream; await v.play(); $('wd-cam').classList.remove('hidden'); }catch(e){ alert('Camera unavailable: '+e.message); } }
     function closeCamera(){ if(camStream){ camStream.getTracks().forEach(function(t){t.stop()}); camStream=null; } $('wd-cam').classList.add('hidden'); }
-    async function shootCamera(){ var v=$('wd-cam-video'); var vw=v.videoWidth||256,vh=v.videoHeight||256,sz=Math.min(vw,vh); wctx.clearRect(0,0,256,256); wctx.drawImage(v,(vw-sz)/2,(vh-sz)/2,sz,sz,0,0,256,256); var orig=wctx.getImageData(0,0,256,256); closeCamera(); await embedImageAndShow(orig); }
+    async function shootCamera(){ try{ var v=$('wd-cam-video'); if(v.readyState<2){ await new Promise(function(r){ var d=function(){r()}; v.addEventListener('loadeddata',d,{once:true}); setTimeout(d,1000); }); } var vw=v.videoWidth||v.clientWidth||256, vh=v.videoHeight||v.clientHeight||256, sz=Math.min(vw,vh); var tmp=document.createElement('canvas'); tmp.width=256; tmp.height=256; var tx=tmp.getContext('2d',{willReadFrequently:true}); tx.drawImage(v,(vw-sz)/2,(vh-sz)/2,sz,sz,0,0,256,256); var orig=tx.getImageData(0,0,256,256); closeCamera(); await embedImageAndShow(orig); }catch(e){ closeCamera(); alert('Capture failed: '+(e&&e.message?e.message:e)); } }
     $('wd-cam-shot').addEventListener('click', shootCamera);
     $('wd-cam-cancel').addEventListener('click', closeCamera);
     // ---------- shared ----------
