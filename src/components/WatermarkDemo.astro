@@ -17,7 +17,12 @@ const cfg = {
     <h2 class="font-display text-[26px] md:text-[30px] font-semibold tracking-[-0.01em] text-ink">Try invisible watermarking</h2>
   </div>
 
-  <div class="mt-8 rounded-[14px] border border-border bg-card overflow-hidden">
+  <div class="mt-6 rounded-[14px] border border-border bg-card overflow-hidden">
+    <div class="flex border-b border-border">
+      <button data-tab="image" class="wd-tab flex-1 px-4 py-2.5 font-mono text-[12px] text-ink border-b-2 border-accent">🖼 Image · VideoSeal</button>
+      <button data-tab="audio" class="wd-tab flex-1 px-4 py-2.5 font-mono text-[12px] text-muted border-b-2 border-transparent hover:text-ink transition-colors">🔊 Audio · AudioSeal</button>
+    </div>
+    <div id="wd-panel-image">
     <!-- load gate -->
     <div id="wd-loader" class="p-8 text-center">
       <button id="wd-load" class="inline-flex items-center gap-2 rounded-md border border-accent bg-accent-soft px-4 py-2 font-mono text-[12.5px] text-accent hover:bg-accent hover:text-bg transition-colors">
@@ -43,6 +48,13 @@ const cfg = {
             </div>
             <span class="pointer-events-none absolute bottom-1.5 left-2 font-mono text-[9px] uppercase tracking-wider text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,.7)]">image</span>
             <span class="pointer-events-none absolute bottom-1.5 right-2 font-mono text-[9px] uppercase tracking-wider text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,.7)]">the watermark</span>
+            <div id="wd-cam" class="hidden absolute inset-0 z-20 bg-black flex flex-col">
+              <video id="wd-cam-video" class="flex-1 min-h-0 w-full object-cover" playsinline muted></video>
+              <div class="flex gap-2 p-2">
+                <button id="wd-cam-shot" class="flex-1 rounded-md bg-accent text-bg font-mono text-[12px] py-1.5">📸 Capture</button>
+                <button id="wd-cam-cancel" class="rounded-md border border-white/40 text-white font-mono text-[12px] px-3 py-1.5">✕</button>
+              </div>
+            </div>
             <div id="wd-embed-overlay" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-card/95 backdrop-blur-sm px-5 text-center">
               <div class="h-6 w-6 rounded-full border-2 border-accent border-t-transparent animate-spin"></div>
               <p id="wd-ovl-msg" class="font-mono text-[11px] text-ink-soft leading-snug">Downloading the watermark generator…</p>
@@ -80,6 +92,51 @@ const cfg = {
             <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Hidden message · 256 bits</p>
             <p id="wd-bitstring" class="mt-1 font-mono text-[9px] leading-[1.5] break-all rounded-md p-2.5" style="background:#0b1220;color:#94a3b8">press “Detect the watermark” to read the hidden bits</p>
           </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div id="wd-panel-audio" class="hidden">
+      <div id="wa-loader" class="p-8 text-center">
+        <button id="wa-load" class="inline-flex items-center gap-2 rounded-md border border-accent bg-accent-soft px-4 py-2 font-mono text-[12.5px] text-accent hover:bg-accent hover:text-bg transition-colors">▶ Load AudioSeal (46 MB, cached)</button>
+        <div id="wa-load-progress" class="mt-4 hidden mx-auto max-w-[360px]">
+          <div class="h-1.5 w-full overflow-hidden rounded-full bg-border"><div id="wa-load-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div></div>
+          <p id="wa-load-msg" class="mt-2 font-mono text-[11px] text-muted"></p>
+        </div>
+      </div>
+      <div id="wa-demo" class="hidden p-4 sm:p-5">
+        <div id="wa-gallery" class="flex flex-wrap gap-2 justify-center"></div>
+        <div class="relative mt-5 rounded-[8px] border border-border bg-figure p-3">
+          <canvas id="wa-wave" width="560" height="110" class="w-full h-[110px]"></canvas>
+          <div id="wa-overlay" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-card/95 backdrop-blur-sm px-5 text-center">
+            <div class="h-6 w-6 rounded-full border-2 border-accent border-t-transparent animate-spin"></div>
+            <p id="wa-ovl-msg" class="font-mono text-[11px] text-ink-soft">Watermarking…</p>
+            <div class="h-1.5 w-full max-w-[180px] overflow-hidden rounded-full bg-border"><div id="wa-ovl-bar" class="h-full w-0 bg-accent transition-[width] duration-150"></div></div>
+          </div>
+          <div id="wa-mic" class="hidden absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/90 px-5 text-center">
+            <div class="h-3 w-3 rounded-full bg-red-500 animate-pulse"></div>
+            <p class="font-mono text-[12px] text-white">● Recording…</p>
+            <button id="wa-mic-stop" class="rounded-md bg-accent text-bg font-mono text-[12px] px-4 py-1.5">■ Stop &amp; watermark</button>
+          </div>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-2 justify-center font-mono text-[11px]">
+          <button id="wa-play-orig" class="px-2.5 py-1 rounded border border-border hover:border-ink transition-colors">▶ original</button>
+          <button id="wa-play-wm" class="px-2.5 py-1 rounded border border-accent text-accent hover:bg-accent-soft transition-colors">▶ watermarked</button>
+          <button id="wa-stop" class="px-2.5 py-1 rounded border border-border hover:border-ink transition-colors">■ stop</button>
+        </div>
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3">
+          <label class="block"><span class="font-mono text-[11px] text-ink-soft">Background noise <b id="wa-vn" class="text-accent">0</b></span><input id="wa-noise" type="range" min="0" max="60" value="0" class="w-full accent-[var(--color-accent)]" /></label>
+          <label class="block"><span class="font-mono text-[11px] text-ink-soft">Keep first <b id="wa-vc" class="text-accent">100</b>%</span><input id="wa-crop" type="range" min="20" max="100" value="100" class="w-full accent-[var(--color-accent)]" /></label>
+        </div>
+        <button id="wa-detect" class="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md border border-accent bg-accent-soft px-4 py-2 font-mono text-[12.5px] text-accent hover:bg-accent hover:text-bg transition-colors">🔍 Detect the watermark</button>
+        <div class="mt-3 rounded-[10px] border border-border bg-bg-subtle p-4">
+          <div class="flex items-end justify-between">
+            <div><p class="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Bits recovered</p><p class="mt-1"><span id="wa-acc" class="font-display text-[30px] font-semibold text-ink leading-none">--</span><span class="text-[14px] text-muted"> / 16</span></p></div>
+            <p id="wa-verdict" class="font-mono text-[11px] px-2.5 py-1 rounded-full border border-border text-muted">idle</p>
+          </div>
+          <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-border"><div id="wa-accbar" class="h-full w-0 transition-[width] duration-300" style="background:var(--color-accent)"></div></div>
+          <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-2">Hidden message · 16 bits</p>
+          <p id="wa-bitstring" class="mt-1 font-mono text-[13px] tracking-[0.2em] break-all rounded-md p-2.5" style="background:#0b1220;color:#94a3b8">press “Detect the watermark” to read the hidden bits</p>
         </div>
       </div>
     </div>
@@ -131,7 +188,7 @@ const cfg = {
 
     async function selectImage(item){ current={id:item.id,bits:item.bits?Uint8Array.from(item.bits,function(c){return +c}):null}; bases.wm=await imgToData(cfg.galleryDir+item.wm); bases.orig=await imgToData(cfg.galleryDir+item.orig); bases.heat=await imgToData(cfg.galleryDir+item.heat); $('wd-jpeg').value=100; $('wd-vq').textContent='100'; $('wd-crop').value=100; $('wd-vc').textContent='100'; $('wd-rot').value=0; $('wd-vr').textContent='0'; setSplit(50); await applyAttacks(); document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.toggle('ring-2',t.dataset.id===item.id);}); }
 
-    async function loadModel(){ $('wd-load').disabled=true; $('wd-load').style.opacity=.5; $('wd-load-progress').classList.remove('hidden'); var msg=$('wd-load-msg'),bar=$('wd-load-bar'); try{ msg.textContent='fetching ONNX Runtime…'; ort=await import('https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/ort.mjs'); ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/'; var buf=await fetchModel(cfg.detector,66887334,bar,msg,'downloading detector…'); msg.textContent='initializing…'; try{session=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){session=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} $('wd-loader').classList.add('hidden'); $('wd-demo').classList.remove('hidden'); gallery=await (await fetch(cfg.gallery)).json(); var g=$('wd-gallery'); gallery.images.forEach(function(item){ var b=document.createElement('button'); b.className='wd-th w-[60px] h-[60px] rounded-[6px] border border-border overflow-hidden ring-accent hover:ring-2'; b.dataset.id=item.id; b.innerHTML='<img src="'+cfg.galleryDir+item.wm+'" alt="'+item.id+'" class="w-full h-full object-cover" />'; b.addEventListener('click',function(){selectImage(item)}); g.appendChild(b); }); var plus=document.createElement('button'); plus.className='w-[60px] h-[60px] rounded-[6px] border border-dashed border-accent/60 text-accent grid place-items-center text-[24px] leading-none hover:bg-accent-soft transition-colors'; plus.title='Watermark your own image'; plus.setAttribute('aria-label','Watermark your own image'); plus.textContent='+'; plus.addEventListener('click',function(){$('wd-upload').click();}); g.appendChild(plus); await selectImage(gallery.images[0]); }catch(e){ msg.textContent='failed: '+(e&&e.message?e.message:e); $('wd-load').disabled=false; $('wd-load').style.opacity=1; } }
+    async function loadModel(){ $('wd-load').disabled=true; $('wd-load').style.opacity=.5; $('wd-load-progress').classList.remove('hidden'); var msg=$('wd-load-msg'),bar=$('wd-load-bar'); try{ msg.textContent='fetching ONNX Runtime…'; ort=await import('https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/ort.mjs'); ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/'; var buf=await fetchModel(cfg.detector,66887334,bar,msg,'downloading detector…'); msg.textContent='initializing…'; try{session=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){session=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} $('wd-loader').classList.add('hidden'); $('wd-demo').classList.remove('hidden'); gallery=await (await fetch(cfg.gallery)).json(); var g=$('wd-gallery'); gallery.images.forEach(function(item){ var b=document.createElement('button'); b.className='wd-th w-[60px] h-[60px] rounded-[6px] border border-border overflow-hidden ring-accent hover:ring-2'; b.dataset.id=item.id; b.innerHTML='<img src="'+cfg.galleryDir+item.wm+'" alt="'+item.id+'" class="w-full h-full object-cover" />'; b.addEventListener('click',function(){selectImage(item)}); g.appendChild(b); }); var plus=document.createElement('button'); plus.className='w-[60px] h-[60px] rounded-[6px] border border-dashed border-accent/60 text-accent grid place-items-center text-[24px] leading-none hover:bg-accent-soft transition-colors'; plus.title='Watermark your own image'; plus.setAttribute('aria-label','Watermark your own image'); plus.textContent='+'; plus.addEventListener('click',function(){$('wd-upload').click();}); g.appendChild(plus); var cam=document.createElement('button'); cam.className='w-[60px] h-[60px] rounded-[6px] border border-dashed border-accent/60 text-accent grid place-items-center text-[20px] leading-none hover:bg-accent-soft transition-colors'; cam.title='Take a photo'; cam.setAttribute('aria-label','Take a photo'); cam.textContent='📷'; cam.addEventListener('click',openCamera); g.appendChild(cam); await selectImage(gallery.images[0]); }catch(e){ msg.textContent='failed: '+(e&&e.message?e.message:e); $('wd-load').disabled=false; $('wd-load').style.opacity=1; } }
 
     $('wd-load').addEventListener('click', loadModel);
     $('wd-detect').addEventListener('click', detect);
@@ -140,6 +197,49 @@ const cfg = {
     $('wd-jpeg').addEventListener('change',applyAttacks);
     $('wd-crop').addEventListener('input',function(){$('wd-vc').textContent=$('wd-crop').value;}); $('wd-crop').addEventListener('change',applyAttacks);
     $('wd-rot').addEventListener('input',function(){$('wd-vr').textContent=$('wd-rot').value;}); $('wd-rot').addEventListener('change',applyAttacks);
-    $('wd-upload').addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f) return; var url=URL.createObjectURL(f); showOverlay('Reading your image…'); try{ var orig=await imgToData(url); await loadEmbedder(); $('wd-ovl-msg').textContent='Watermarking your image in your browser…'; $('wd-ovl-bar').style.width='100%'; await new Promise(function(r){setTimeout(r,40)}); var m=randomMessage(); var out=await embedder.run({image:toTensor(orig),message:m.tensor}); var wm=tensorToImageData(out.image_w); bases.orig=orig; bases.wm=wm; bases.heat=residualHeat(wm,orig); current={id:'upload',bits:m.bits}; document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.remove('ring-2');}); $('wd-jpeg').value=100;$('wd-vq').textContent='100'; $('wd-crop').value=100; $('wd-vc').textContent='100'; $('wd-rot').value=0; $('wd-vr').textContent='0'; setSplit(50); await applyAttacks(); hideOverlay(); }catch(err){ $('wd-ovl-msg').textContent='Failed: '+(err&&err.message?err.message:err); } finally{ URL.revokeObjectURL(url); } });
+    async function embedImageAndShow(orig){ showOverlay('Reading your image...'); try{ await ensureOrt(); await loadEmbedder(); $('wd-ovl-msg').textContent='Watermarking your image in your browser...'; $('wd-ovl-bar').style.width='100%'; await sleep(40); var m=randomMessage(); var out=await embedder.run({image:toTensor(orig),message:m.tensor}); var wm=tensorToImageData(out.image_w); bases.orig=orig; bases.wm=wm; bases.heat=residualHeat(wm,orig); current={id:'you',bits:m.bits}; document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.remove('ring-2');}); $('wd-jpeg').value=100;$('wd-vq').textContent='100'; $('wd-crop').value=100; $('wd-vc').textContent='100'; $('wd-rot').value=0; $('wd-vr').textContent='0'; setSplit(50); await applyAttacks(); hideOverlay(); }catch(err){ $('wd-ovl-msg').textContent='Failed: '+(err&&err.message?err.message:err); } }
+    $('wd-upload').addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f) return; var url=URL.createObjectURL(f); try{ var orig=await imgToData(url); await embedImageAndShow(orig); }finally{ URL.revokeObjectURL(url); } });
+    var camStream=null;
+    async function openCamera(){ try{ camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}); var v=$('wd-cam-video'); v.srcObject=camStream; await v.play(); $('wd-cam').classList.remove('hidden'); }catch(e){ alert('Camera unavailable: '+e.message); } }
+    function closeCamera(){ if(camStream){ camStream.getTracks().forEach(function(t){t.stop()}); camStream=null; } $('wd-cam').classList.add('hidden'); }
+    async function shootCamera(){ var v=$('wd-cam-video'); var vw=v.videoWidth||256,vh=v.videoHeight||256,sz=Math.min(vw,vh); wctx.clearRect(0,0,256,256); wctx.drawImage(v,(vw-sz)/2,(vh-sz)/2,sz,sz,0,0,256,256); var orig=wctx.getImageData(0,0,256,256); closeCamera(); await embedImageAndShow(orig); }
+    $('wd-cam-shot').addEventListener('click', shootCamera);
+    $('wd-cam-cancel').addEventListener('click', closeCamera);
+    // ---------- shared ----------
+    function sleep(ms){ return new Promise(function(r){setTimeout(r,ms)}); }
+    async function ensureOrt(){ if(ort) return ort; ort=await import('https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/ort.mjs'); ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/'; return ort; }
+
+    // ---------- tabs ----------
+    document.querySelectorAll('.wd-tab').forEach(function(t){ t.addEventListener('click',function(){ var tab=t.getAttribute('data-tab'); document.querySelectorAll('.wd-tab').forEach(function(b){ var on=b.getAttribute('data-tab')===tab; b.classList.toggle('text-ink',on); b.classList.toggle('border-accent',on); b.classList.toggle('text-muted',!on); b.classList.toggle('border-transparent',!on); }); $('wd-panel-image').classList.toggle('hidden',tab!=='image'); $('wd-panel-audio').classList.toggle('hidden',tab!=='audio'); }); });
+
+    // ---------- audio (AudioSeal) ----------
+    var audioEmb=null, audioDet=null, aGallery=null, aCurrent=null, aBases={}, lastA=null, audioCtx=null, srcNode=null, SR=16000;
+    async function decodeTo16k(ab){ var ac=new (window.AudioContext||window.webkitAudioContext)(); var buf=await ac.decodeAudioData(ab.slice(0)); ac.close(); var off=new OfflineAudioContext(1,Math.ceil(buf.duration*SR),SR); var mono=off.createBuffer(1,buf.length,buf.sampleRate); var m=mono.getChannelData(0); for(var ch=0;ch<buf.numberOfChannels;ch++){ var d=buf.getChannelData(ch); for(var i=0;i<d.length;i++) m[i]+=d[i]/buf.numberOfChannels; } var s=off.createBufferSource(); s.buffer=mono; s.connect(off.destination); s.start(); var r=await off.startRendering(); return r.getChannelData(0).slice(); }
+    async function fetchAudio(url){ return decodeTo16k(await (await fetch(url)).arrayBuffer()); }
+    function randMsg16(){ var bits=new Uint8Array(16),big=new BigInt64Array(16),r=new Uint8Array(16); crypto.getRandomValues(r); for(var i=0;i<16;i++){bits[i]=r[i]&1;big[i]=BigInt(bits[i]);} return {bits:bits,tensor:new ort.Tensor('int64',big,[1,16])}; }
+    async function embedAudio(x,msgTensor){ var N=16000,out=new Float32Array(x.length); for(var o=0;o<x.length;o+=N){ var len=Math.min(N,x.length-o); var frame=new Float32Array(N); frame.set(x.subarray(o,o+len)); var t=new ort.Tensor('float32',frame,[1,1,N]); var r=await audioEmb.run({audio:t,message:msgTensor}); var w=r.audio_w.data; for(var i=0;i<len;i++) out[o+i]=w[i]; } return out; }
+    function audioAttack(x){ var crop=+$('wa-crop').value,noise=+$('wa-noise').value,y=x; if(crop<100) y=y.slice(0,Math.floor(y.length*crop/100)); if(noise>0){ var s=noise/1000,z=new Float32Array(y.length); for(var i=0;i<y.length;i++) z[i]=y[i]+(Math.random()+Math.random()+Math.random()-1.5)*s; y=z; } return y; }
+    function drawWave(x){ var c=$('wa-wave'),ctx=c.getContext('2d'),W=c.width,H=c.height; ctx.clearRect(0,0,W,H); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--color-accent')||'#12507a'; ctx.beginPath(); var step=Math.max(1,Math.ceil(x.length/W)); for(var i=0;i<W;i++){ var mn=1,mx=-1; for(var j=0;j<step;j++){ var v=x[i*step+j]||0; if(v<mn)mn=v; if(v>mx)mx=v; } ctx.moveTo(i,(1-(mx*0.9+1)/2)*H); ctx.lineTo(i,(1-(mn*0.9+1)/2)*H); } ctx.stroke(); }
+    function aStop(){ if(srcNode){ try{srcNode.stop()}catch(e){} srcNode=null; } }
+    function aPlay(x){ if(!x) return; aStop(); audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); var b=audioCtx.createBuffer(1,x.length,SR); b.getChannelData(0).set(x); srcNode=audioCtx.createBufferSource(); srcNode.buffer=b; srcNode.connect(audioCtx.destination); srcNode.start(); }
+    function aResetResult(){ $('wa-acc').textContent='--'; $('wa-accbar').style.width='0%'; var v=$('wa-verdict'); v.textContent='idle'; v.style.color=''; v.style.borderColor=''; $('wa-bitstring').textContent='press the Detect button to read the hidden bits'; }
+    function applyAudioAttacks(){ if(!aBases.wm) return; lastA=audioAttack(aBases.wm); drawWave(lastA); aResetResult(); }
+    async function aDetect(){ if(!audioDet||!lastA) return; var v=$('wa-verdict'); v.textContent='reading...'; var out=await audioDet.run({audio:new ort.Tensor('float32',lastA,[1,1,lastA.length])}); var msg=out.message.data,truth=aCurrent&&aCurrent.bits?aCurrent.bits:null,correct=0,html=''; for(var i=0;i<16;i++){ var bit=msg[i]>0.5?1:0; var ok=truth?bit===truth[i]:true; if(ok)correct++; var col=truth==null?'#94a3b8':(ok?'#34d399':'#f87171'); html+='<span style="color:'+col+'">'+bit+'</span>'; } $('wa-bitstring').innerHTML=html; var acc=$('wa-acc'),bar=$('wa-accbar'); acc.textContent=truth?String(correct):'?'; var pct=truth?correct/16:1; bar.style.width=(pct*100)+'%'; var label,c2; if(pct>=0.9){label='detected';c2='var(--color-accent)';}else if(pct>=0.66){label='degraded';c2='#c98a00';}else{label='destroyed';c2='#d1495b';} bar.style.background=c2; v.textContent=label+' ('+Math.round(pct*100)+'%)'; v.style.color=c2; v.style.borderColor=c2; }
+    async function aSelect(clip){ aStop(); aCurrent={id:clip.id,bits:clip.bits?Uint8Array.from(clip.bits,function(c){return +c}):null}; aBases.orig=await fetchAudio(cfg.audDir+clip.orig); aBases.wm=await fetchAudio(cfg.audDir+clip.wm); $('wa-noise').value=0; $('wa-vn').textContent='0'; $('wa-crop').value=100; $('wa-vc').textContent='100'; applyAudioAttacks(); document.querySelectorAll('#wa-gallery .wa-th').forEach(function(t){t.classList.toggle('ring-2',t.dataset.id===clip.id);}); }
+    async function aWatermarkOwn(x){ var o=$('wa-overlay'); o.classList.remove('hidden'); $('wa-ovl-msg').textContent='Watermarking your audio in your browser...'; $('wa-ovl-bar').style.width='30%'; await sleep(30); var m=randMsg16(); aBases.orig=x; aBases.wm=await embedAudio(x,m.tensor); $('wa-ovl-bar').style.width='100%'; aCurrent={id:'you',bits:m.bits}; document.querySelectorAll('#wa-gallery .wa-th').forEach(function(t){t.classList.remove('ring-2');}); $('wa-noise').value=0; $('wa-vn').textContent='0'; $('wa-crop').value=100; $('wa-vc').textContent='100'; applyAudioAttacks(); o.classList.add('hidden'); }
+    async function aLoad(){ $('wa-load').disabled=true; $('wa-load').style.opacity=.5; $('wa-load-progress').classList.remove('hidden'); var msg=$('wa-load-msg'),bar=$('wa-load-bar'); try{ msg.textContent='fetching ONNX Runtime...'; await ensureOrt(); var eb=await fetchModel(cfg.audEmbedder,30000000,bar,msg,'downloading generator...'); try{audioEmb=await ort.InferenceSession.create(eb,{executionProviders:['webgpu','wasm']});}catch(e){audioEmb=await ort.InferenceSession.create(eb,{executionProviders:['wasm']});} var db=await fetchModel(cfg.audDetector,17427927,bar,msg,'downloading detector...'); try{audioDet=await ort.InferenceSession.create(db,{executionProviders:['webgpu','wasm']});}catch(e){audioDet=await ort.InferenceSession.create(db,{executionProviders:['wasm']});} $('wa-loader').classList.add('hidden'); $('wa-demo').classList.remove('hidden'); aGallery=await (await fetch(cfg.audGallery)).json(); var g=$('wa-gallery'); aGallery.clips.forEach(function(clip){ var b=document.createElement('button'); b.className='wa-th px-3 py-1.5 rounded-md border border-border font-mono text-[12px] text-ink-soft ring-accent hover:ring-2'; b.dataset.id=clip.id; b.textContent='music '+clip.id; b.addEventListener('click',function(){aSelect(clip)}); g.appendChild(b); }); var up=document.createElement('button'); up.className='px-3 py-1.5 rounded-md border border-dashed border-accent/60 text-accent font-mono text-[12px] hover:bg-accent-soft transition-colors'; up.textContent='+ upload'; up.addEventListener('click',function(){$('wa-upload').click();}); g.appendChild(up); var mic=document.createElement('button'); mic.className='px-3 py-1.5 rounded-md border border-dashed border-accent/60 text-accent font-mono text-[12px] hover:bg-accent-soft transition-colors'; mic.textContent='record mic'; mic.addEventListener('click',openMic); g.appendChild(mic); await aSelect(aGallery.clips[0]); }catch(e){ msg.textContent='failed: '+(e&&e.message?e.message:e); $('wa-load').disabled=false; $('wa-load').style.opacity=1; } }
+    var aUp=document.createElement('input'); aUp.type='file'; aUp.accept='audio/*'; aUp.id='wa-upload'; aUp.className='hidden'; document.body.appendChild(aUp);
+    aUp.addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f) return; try{ var x=await decodeTo16k(await f.arrayBuffer()); await aWatermarkOwn(x); }catch(err){ $('wa-ovl-msg').textContent='Failed: '+(err&&err.message?err.message:err); } });
+    var micRec=null,micChunks=[];
+    async function openMic(){ try{ var stream=await navigator.mediaDevices.getUserMedia({audio:true}); micChunks=[]; micRec=new MediaRecorder(stream); micRec.ondataavailable=function(e){ if(e.data.size) micChunks.push(e.data); }; micRec.onstop=async function(){ stream.getTracks().forEach(function(t){t.stop()}); $('wa-mic').classList.add('hidden'); try{ var blob=new Blob(micChunks,{type:micRec.mimeType||'audio/webm'}); var x=await decodeTo16k(await blob.arrayBuffer()); await aWatermarkOwn(x); }catch(err){ $('wa-ovl-msg').textContent='Failed: '+err.message; } }; micRec.start(); $('wa-mic').classList.remove('hidden'); }catch(e){ alert('Microphone unavailable: '+e.message); } }
+    function stopMic(){ if(micRec&&micRec.state!=='inactive') micRec.stop(); }
+    $('wa-load').addEventListener('click', aLoad);
+    $('wa-detect').addEventListener('click', aDetect);
+    $('wa-mic-stop').addEventListener('click', stopMic);
+    $('wa-play-orig').addEventListener('click',function(){aPlay(aBases.orig);});
+    $('wa-play-wm').addEventListener('click',function(){aPlay(lastA||aBases.wm);});
+    $('wa-stop').addEventListener('click', aStop);
+    $('wa-noise').addEventListener('input',function(){$('wa-vn').textContent=$('wa-noise').value;}); $('wa-noise').addEventListener('change',applyAudioAttacks);
+    $('wa-crop').addEventListener('input',function(){$('wa-vc').textContent=$('wa-crop').value;}); $('wa-crop').addEventListener('change',applyAudioAttacks);
   })();
 </script>
