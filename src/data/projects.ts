@@ -34,7 +34,7 @@ export const projects: Project[] = [
     period: '2024 – 2026',
     title: 'Content Seal',
     blurb:
-      'Built the <span class="font-medium text-ink">Content Seal team from the ground up</span>, scaling watermarking research into products across Meta, including Muse Image and Video. Now <span class="font-medium text-ink">watermarking millions of videos and audio clips per day</span> across the family of apps, spanning AudioSeal, Video Seal, Pixel Seal, and Text Seal.',
+      'Helped found the <span class="font-medium text-ink">Content Seal team</span>, establishing watermarking inside Meta. Scaled watermarking research into products including Muse Image and Video, now <span class="font-medium text-ink">watermarking millions of videos and audio clips per day</span> across the family of apps, powered by our work on AudioSeal, Video Seal, Pixel Seal, and Text Seal.',
     image: '/assets/media/media-contentseal-site.jpg',
     imagePos: 'object-center',
     cover: { href: 'https://facebookresearch.github.io/content-seal/', hint: 'Explore the Content Seal project' },
