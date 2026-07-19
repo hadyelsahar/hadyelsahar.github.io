@@ -100,7 +100,6 @@ const cfg = {
     var $ = function (id) { return document.getElementById(id); };
     var work = document.createElement('canvas'); work.width = work.height = 256;
     var wctx = work.getContext('2d', { willReadFrequently: true });
-    async function imgToData(url) {
     async function imgToData(url) { var im = new Image(); im.crossOrigin = 'anonymous'; im.src = url; await im.decode(); wctx.clearRect(0,0,256,256); wctx.drawImage(im,0,0,256,256); return wctx.getImageData(0,0,256,256); }
 
     async function jpeg(src, q) { var t = document.createElement('canvas'); t.width=t.height=256; t.getContext('2d').putImageData(src,0,0); var b = await new Promise(function(r){t.toBlob(r,'image/jpeg',q/100)}); var bmp = await createImageBitmap(b); var c = document.createElement('canvas'); c.width=c.height=256; var cx=c.getContext('2d'); cx.drawImage(bmp,0,0,256,256); return cx.getImageData(0,0,256,256); }
