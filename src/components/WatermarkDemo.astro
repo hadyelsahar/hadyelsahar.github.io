@@ -12,7 +12,7 @@ const cfg = {
 };
 ---
 
-<section id="watermark-demo" class="reveal mx-auto max-w-[720px] px-6 py-14 scroll-mt-20">
+<section id="watermark-demo" class="hidden mx-auto max-w-[720px] px-6 py-14 scroll-mt-20">
   <div class="text-center">
     <h2 class="mt-2 font-display text-[26px] md:text-[30px] font-semibold tracking-[-0.01em] text-ink">Try invisible watermarking</h2>
   </div>
@@ -80,6 +80,16 @@ const cfg = {
   </div>
 </section>
 
+<script is:inline>
+  document.querySelectorAll('[data-reveal-demo]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var s = document.getElementById('watermark-demo');
+      if (s) { s.classList.remove('hidden'); s.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+</script>
+
 <script type="application/json" id="wd-cfg" set:html={JSON.stringify(cfg)}></script>
 <script is:inline>
   (function () {
@@ -100,7 +110,8 @@ const cfg = {
     function tensorToImageData(t){ var d=t.data,n=256*256,out=new Uint8ClampedArray(4*n); for(var i=0;i<n;i++){out[i*4]=d[i]*255;out[i*4+1]=d[n+i]*255;out[i*4+2]=d[2*n+i]*255;out[i*4+3]=255;} return new ImageData(out,256,256); }
     function residualHeat(wm,orig,amp){ amp=amp||18; var a=wm.data,b=orig.data,out=new Uint8ClampedArray(a.length); for(var i=0;i<a.length;i+=4){out[i]=128+(a[i]-b[i])*amp;out[i+1]=128+(a[i+1]-b[i+1])*amp;out[i+2]=128+(a[i+2]-b[i+2])*amp;out[i+3]=255;} return new ImageData(out,256,256); }
 
-    async function loadEmbedder(){ if(embedder) return embedder; var w=$('wd-emb-progress'),bar=$('wd-emb-bar'),msg=$('wd-emb-msg'); w.classList.remove('hidden'); bar.style.width='0%'; msg.textContent='downloading embedder…'; var resp=await fetch(cfg.embedder); var total=+resp.headers.get('content-length')||47380497; var reader=resp.body.getReader(),chunks=[],got=0; while(true){var r=await reader.read(); if(r.done) break; chunks.push(r.value); got+=r.value.length; bar.style.width=Math.min(100,got/total*100)+'%'; msg.textContent='downloading embedder… '+(got/1e6|0)+' / '+(total/1e6|0)+' MB';} var buf=new Uint8Array(got),o=0; for(var c of chunks){buf.set(c,o);o+=c.length;} msg.textContent='initializing embedder…'; try{embedder=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){embedder=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} msg.textContent='embedder ready'; setTimeout(function(){w.classList.add('hidden')},1500); return embedder; }
+    async function fetchModel(url,fallback,bar,msg,label){ var resp=await fetch(url); if(!resp.body||!resp.body.getReader){ if(bar) bar.style.width='100%'; if(msg) msg.textContent=label+' (cached)'; return new Uint8Array(await resp.arrayBuffer()); } var total=+resp.headers.get('content-length')||fallback; var reader=resp.body.getReader(),chunks=[],got=0; while(true){ var r=await reader.read(); if(r.done) break; chunks.push(r.value); got+=r.value.length; if(bar) bar.style.width=Math.min(100,got/total*100)+'%'; if(msg) msg.textContent=label+' '+(got/1e6|0)+' / '+(total/1e6|0)+' MB'; } var b=new Uint8Array(got),o=0; for(var c of chunks){b.set(c,o);o+=c.length;} return b; }
+    async function loadEmbedder(){ if(embedder) return embedder; var w=$('wd-emb-progress'),bar=$('wd-emb-bar'),msg=$('wd-emb-msg'); w.classList.remove('hidden'); bar.style.width='0%'; msg.textContent='downloading embedder…'; var buf=await fetchModel(cfg.embedder,47380497,bar,msg,'downloading embedder…'); msg.textContent='initializing embedder…'; try{embedder=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){embedder=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} msg.textContent='embedder ready'; setTimeout(function(){w.classList.add('hidden')},1500); return embedder; }
 
     async function detect(){ if(!session||!lastAttacked) return; var v=$('wd-verdict'); v.textContent='reading…'; var out=await session.run({image:toTensor(lastAttacked)}); var preds=out.preds.data; var rec=new Uint8Array(256); for(var i=0;i<256;i++)rec[i]=preds[i+1]>0?1:0; var truth=current&&current.bits?current.bits:null; var correct=0,html=''; for(var i=0;i<256;i++){ var ok=truth?rec[i]===truth[i]:true; if(ok)correct++; var col=truth==null?'var(--color-ink-soft)':(ok?'var(--color-accent)':'#d1495b'); html+='<span style="color:'+col+'">'+rec[i]+'</span>'; } $('wd-bitstring').innerHTML=html; var acc=$('wd-acc'),bar=$('wd-accbar'); acc.textContent=truth?String(correct):'?'; var pct=truth?correct/256:1; bar.style.width=(pct*100)+'%'; var label,c2; if(pct>=0.9){label='✓ detected';c2='var(--color-accent)';}else if(pct>=0.68){label='~ degraded';c2='#c98a00';}else{label='✗ destroyed';c2='#d1495b';} bar.style.background=c2; v.textContent=label+' ('+Math.round(pct*100)+'%)'; v.style.color=c2; v.style.borderColor=c2; }
 
@@ -111,7 +122,7 @@ const cfg = {
 
     async function selectImage(item){ current={id:item.id,bits:item.bits?Uint8Array.from(item.bits,function(c){return +c}):null}; bases.wm=await imgToData(cfg.galleryDir+item.wm); bases.orig=await imgToData(cfg.galleryDir+item.orig); bases.heat=await imgToData(cfg.galleryDir+item.heat); $('wd-jpeg').value=100; $('wd-vq').textContent='100'; setSplit(50); await applyAttacks(); document.querySelectorAll('#wd-gallery .wd-th').forEach(function(t){t.classList.toggle('ring-2',t.dataset.id===item.id);}); }
 
-    async function loadModel(){ $('wd-load').disabled=true; $('wd-load').style.opacity=.5; $('wd-load-progress').classList.remove('hidden'); var msg=$('wd-load-msg'),bar=$('wd-load-bar'); try{ msg.textContent='fetching ONNX Runtime…'; ort=await import('https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/ort.mjs'); ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/'; var resp=await fetch(cfg.detector); var total=+resp.headers.get('content-length')||66887334; var reader=resp.body.getReader(),chunks=[],got=0; while(true){var r=await reader.read(); if(r.done)break; chunks.push(r.value); got+=r.value.length; bar.style.width=Math.min(100,got/total*100)+'%'; msg.textContent='downloading detector… '+(got/1e6|0)+' / '+(total/1e6|0)+' MB';} var buf=new Uint8Array(got),o=0; for(var c of chunks){buf.set(c,o);o+=c.length;} msg.textContent='initializing…'; try{session=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){session=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} $('wd-loader').classList.add('hidden'); $('wd-demo').classList.remove('hidden'); gallery=await (await fetch(cfg.gallery)).json(); var g=$('wd-gallery'); gallery.images.forEach(function(item){ var b=document.createElement('button'); b.className='wd-th w-[60px] h-[60px] rounded-[6px] border border-border overflow-hidden ring-accent hover:ring-2'; b.dataset.id=item.id; b.innerHTML='<img src="'+cfg.galleryDir+item.wm+'" alt="'+item.id+'" class="w-full h-full object-cover" />'; b.addEventListener('click',function(){selectImage(item)}); g.appendChild(b); }); await selectImage(gallery.images[0]); }catch(e){ msg.textContent='failed: '+(e&&e.message?e.message:e); } }
+    async function loadModel(){ $('wd-load').disabled=true; $('wd-load').style.opacity=.5; $('wd-load-progress').classList.remove('hidden'); var msg=$('wd-load-msg'),bar=$('wd-load-bar'); try{ msg.textContent='fetching ONNX Runtime…'; ort=await import('https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/ort.mjs'); ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+ORT+'/dist/'; var buf=await fetchModel(cfg.detector,66887334,bar,msg,'downloading detector…'); msg.textContent='initializing…'; try{session=await ort.InferenceSession.create(buf,{executionProviders:['webgpu','wasm']});}catch(e){session=await ort.InferenceSession.create(buf,{executionProviders:['wasm']});} $('wd-loader').classList.add('hidden'); $('wd-demo').classList.remove('hidden'); gallery=await (await fetch(cfg.gallery)).json(); var g=$('wd-gallery'); gallery.images.forEach(function(item){ var b=document.createElement('button'); b.className='wd-th w-[60px] h-[60px] rounded-[6px] border border-border overflow-hidden ring-accent hover:ring-2'; b.dataset.id=item.id; b.innerHTML='<img src="'+cfg.galleryDir+item.wm+'" alt="'+item.id+'" class="w-full h-full object-cover" />'; b.addEventListener('click',function(){selectImage(item)}); g.appendChild(b); }); await selectImage(gallery.images[0]); }catch(e){ msg.textContent='failed: '+(e&&e.message?e.message:e); $('wd-load').disabled=false; $('wd-load').style.opacity=1; } }
 
     $('wd-load').addEventListener('click', loadModel);
     $('wd-detect').addEventListener('click', detect);
